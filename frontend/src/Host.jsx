@@ -68,7 +68,39 @@ function Host() {
       <div className="desktop">
         
         {room.state === 'lobby' && (
-          <div className="window absolute left-[calc(50%-220px)] top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '400px' }}>
+          <div className="window absolute left-[calc(50%-440px)] top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '400px' }}>
+            <div className="title-bar">
+              <div className="title-bar-text">Room Code.exe</div>
+              <div className="title-bar-controls">
+                <button aria-label="Minimize"></button>
+                <button aria-label="Maximize"></button>
+                <button aria-label="Close"></button>
+              </div>
+            </div>
+            <div className="window-body text-center p-6 bg-[#ece9d8]">
+              
+              {/* Retro Input Field for Room Code */}
+              <div className="bg-white pt-2 pb-4 flex @flex-col items-center justify-center" style={{ marginBottom: '50px', border: '2px solid', borderColor: '#808080 #ffffff #ffffff #808080' }}>
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 font-tahoma">Room Code</span>
+                <div className="text-[76px] font-mono leading-none tracking-[0.15em] font-bold text-black" style={{ transform: 'translateX(0.075em)' }}>
+                  {room.code}
+                </div>
+              </div>
+
+              {/* Retro Box for QR Code */}
+              <div className="flex justify-center mb-6">
+                <div className="bg-white p-4" style={{ border: '2px solid', borderColor: '#808080 #ffffff #ffffff #808080' }}>
+                  <QRCodeSVG value={joinUrl} size={250} bgColor="#ffffff" fgColor="#000000" />
+                </div>
+              </div>
+
+              <p className="font-bold text-black font-tahoma text-xl mb-2" style={{ textShadow: '1px 1px 0px rgba(255,255,255,0.8)' }}>Scan to Join</p>
+            </div>
+          </div>
+        )}
+
+        {room.state === 'lobby' && (
+          <div className="window absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '400px' }}>
             <div className="title-bar">
               <div className="title-bar-text">Server Monitor.exe</div>
               <div className="title-bar-controls">
@@ -78,20 +110,38 @@ function Host() {
               </div>
             </div>
             <div className="window-body">
-              <p>Room Code: <strong>{room.code}</strong></p>
-              <div className="flex justify-center my-6">
-                <QRCodeSVG value={joinUrl} size={200} bgColor="transparent" fgColor="#000000" style={{ filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.3))' }} />
+              <div className="mb-4">
+                <fieldset>
+                  <legend>Game Settings</legend>
+                  <div className="field-row mb-2">
+                    <label htmlFor="timer-setting">Seconds per Question:</label>
+                    <input id="timer-setting" type="number" defaultValue={15} min={5} max={60} style={{ width: '60px' }} />
+                  </div>
+                  <div className="field-row mb-2">
+                    <label htmlFor="q-file">Custom JSON Questions:</label>
+                    <input id="q-file" type="file" accept=".json" />
+                  </div>
+                  <div className="field-row">
+                    <input id="fast-mode" type="checkbox" />
+                    <label htmlFor="fast-mode">Fast Reveal Mode</label>
+                  </div>
+                </fieldset>
               </div>
-              <p>Waiting for players...</p>
-              <button onClick={startGame} disabled={Object.keys(room.players).length === 0} style={{ width: '100%' }}>
-                Start Game
-              </button>
+
+              <div className="flex justify-between items-center mt-6 p-2 border-t border-gray-300">
+                <div className="flex items-center text-gray-600 space-x-2">
+                  <Monitor size={16} /> <span>Status: Ready</span>
+                </div>
+                <button onClick={startGame} disabled={Object.keys(room.players).length === 0} style={{ width: '120px', height: '30px' }} className="font-bold">
+                  Start Game
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {room.state === 'lobby' && (
-          <div className="window absolute left-[calc(50%+220px)] top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '300px', height: '400px' }}>
+          <div className="window absolute left-[calc(50%+420px)] top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '300px', height: '400px' }}>
             <div className="title-bar">
               <div className="title-bar-text">Connected Players.exe</div>
               <div className="title-bar-controls">
