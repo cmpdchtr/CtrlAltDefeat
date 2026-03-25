@@ -1,0 +1,201 @@
+@import url("https://unpkg.com/xp.css/dist/XP.css");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* */ 
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
+  background-image: url('https://upload.wikimedia.org/wikipedia/en/2/21/Bliss_%28Windows_XP%29.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.bsod {
+  background-color: #0000AA;
+  color: white;
+  font-family: "Lucida Console", Monaco, monospace;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.bsod h1 {
+  background: white;
+  color: #0000AA;
+  display: inline-block;
+  padding: 0 4px;
+  font-size: 1.5rem;
+}
+
+.bsod p {
+  font-size: 1.2rem;
+  margin: 10px 0;
+  line-height: 1.5;
+}
+
+.clippy {
+  position: fixed;
+  bottom: -200px;
+  right: 50px;
+  width: 150px;
+  height: auto;
+  z-index: 1000;
+  transition: bottom 0.5s ease-in-out;
+}
+
+.clippy.visible {
+  bottom: 50px;
+}
+
+.clippy-bubble {
+  position: absolute;
+  bottom: 150px;
+  right: 0px;
+  width: 200px;
+  background: #ffffe1;
+  border: 1px solid black;
+  border-radius: 8px;
+  padding: 10px;
+  font-family: 'Comic Sans MS', cursive;
+  font-size: 14px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+  display: none;
+}
+
+.clippy.visible .clippy-bubble {
+  display: block;
+}
+
+.desktop {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 30px);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.taskbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  background: linear-gradient(to bottom, #245edb 0%, #3f8cf3 9%, #245edb 18%, #245edb 92%, #333 100%);
+  display: flex;
+  align-items: center;
+  z-index: 500;
+  padding-right: 10px;
+}
+
+.start-btn {
+  background: linear-gradient(to bottom, #3c8243 0%, #3ba945 9%, #34913c 18%, #318a38 92%, #225c27 100%);
+  color: white;
+  font-weight: bold;
+  font-style: italic;
+  font-size: 14px;
+  height: 100%;
+  border: none;
+  cursor: pointer;
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+}
+
+.start-btn img {
+  height: 20px;
+  margin-right: 5px;
+}
+
+.system-tray {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  background: linear-gradient(to bottom, #0f8de0 0%, #15a5f1 9%, #0f8de0 18%, #0f8de0 92%, #0a66a3 100%);
+  border-left: 1px solid #144498;
+  padding: 0 10px;
+  color: white;
+  font-size: 11px;
+}
+
+.desktop-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.desktop-icon {
+  width: 70px;
+  text-align: center;
+  color: white;
+  text-shadow: 1px 1px 2px black;
+  cursor: pointer;
+}
+
+.desktop-icon img {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+}
+
+.desktop-icon span {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+  background-color: transparent;
+}
+
+.desktop-icon:hover span {
+  background-color: rgba(0, 88, 238, 0.5);
+}
+
+.mobile-btn {
+  width: 100%;
+  padding: 20px;
+  font-size: 24px;
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+.winner {
+  background-image: url('https://upload.wikimedia.org/wikipedia/en/2/21/Bliss_%28Windows_XP%29.png');
+  background-size: cover;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: yellow;
+  text-shadow: 2px 2px 0px blue, -2px -2px 0px blue, 2px -2px 0px blue, -2px 2px 0px blue;
+  font-size: 5rem;
+  font-family: 'Comic Sans MS', cursive;
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
+}

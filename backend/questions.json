@@ -1,0 +1,12 @@
+[
+  { "question": "What is the true meaning of the acronym 'PC LOAD LETTER'?", "options": ["Printer cartridge is low", "Paper Cassette needs Letter size paper", "Personal Computer is loading letters", "Press Continuously to Load Letters"], "correct": 1 },
+  { "question": "Which of these is NOT a real HTTP status code?", "options": ["418 I'm a teapot", "420 Enhance Your Calm", "404 Not Found", "450 Blocked by Windows Parental Controls", "206 Partial Content", "499 Client Closed Request", "512 Random Error Occurred"], "correct": 6 },
+  { "question": "What happens if you delete System32?", "options": ["Your computer runs 10x faster", "Nothing, it's a decoy folder", "The Blue Screen of Death (BSOD) and tears", "You unlock Windows 9"], "correct": 2 },
+  { "question": "In what year did the Y2K bug bring about the end of the world?", "options": ["1999", "2000", "2001", "It didn't"], "correct": 3 },
+  { "question": "Which tech mogul famously threw a chair across a room?", "options": ["Steve Jobs", "Bill Gates", "Steve Ballmer", "Mark Zuckerberg"], "correct": 2 },
+  { "question": "What did the famous 'Clippy' office assistant formally go by?", "options": ["Clippit", "Paperclip", "Mr. Clip", "Helper"], "correct": 0 },
+  { "question": "What is the answer to the Ultimate Question of Life, the Universe, and Everything?", "options": ["0", "42", "101010", "NaN"], "correct": 1 },
+  { "question": "Which port does traditional HTTP use?", "options": ["21", "22", "80", "443"], "correct": 2 },
+  { "question": "What was the first computer bug ever recorded?", "options": ["A moth inside the machine", "A typo in a punch card", "A burned vacuum tube", "A bad capacitor"], "correct": 0 },
+  { "question": "If you ask a recursive DNS server 'who am I?', what does it say?", "options": ["You are you", "127.0.0.1", "localhost", "It queries another server until it stacks overflows"], "correct": 3 }
+]
