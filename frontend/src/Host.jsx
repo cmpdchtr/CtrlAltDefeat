@@ -104,7 +104,7 @@ function Host() {
               <div className="desktop-icons grid grid-cols-3 gap-4 auto-rows-max">
                 {Object.values(room.players).map((p, i) => (
                   <div key={i} className="desktop-icon text-black text-shadow-none">
-                    <img src="https://win98icons.alexmeub.com/icons/png/user_computer-0.png" alt="User" />
+                    <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" />
                     <span className="text-black">{p.name}</span>
                   </div>
                 ))}
