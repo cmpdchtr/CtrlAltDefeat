@@ -86,7 +86,7 @@ function Player() {
 
   if (!joined) {
     return (
-      <div className="min-h-screen bg-blue-800 flex items-center justify-center p-4">
+      <div className="h-screen w-screen overflow-hidden bg-blue-800 flex items-center justify-center p-2 box-border">
         <div className="window" style={{ width: '100%', maxWidth: '350px' }}>
           <div className="title-bar">
             <div className="title-bar-text">Log On to CtrlAltDefeat</div>
@@ -94,8 +94,8 @@ function Player() {
               <button aria-label="Close"></button>
             </div>
           </div>
-          <div className="window-body">
-            <div className="flex items-center mb-4">
+          <div className="window-body m-0 p-2">
+            <div className="flex items-center mb-2">
               <LogIn size={32} className="mr-3 text-blue-600" />
               <p>Type a room code and username to log on to the game.</p>
             </div>
@@ -120,21 +120,21 @@ function Player() {
     );
   }
 
-  if (!room) return <div className="min-h-screen bg-blue-800 flex items-center justify-center p-4 text-white">Loading...</div>;
+  if (!room) return <div className="min-h-screen bg-blue-800 flex items-center justify-center p-2 text-white">Loading...</div>;
   const myPlayer = room?.players[socket.id];
   const choice = myPlayer?.choice;
 
   return (
-    <div className="min-h-screen bg-blue-800 p-4 font-tahoma flex flex-col">
+    <div className="h-screen w-screen overflow-hidden bg-blue-800 p-2 font-tahoma flex flex-col box-border">
       <div className="window flex-grow flex flex-col">
         <div className="title-bar">
           <div className="title-bar-text">Connection: {room?.code} - {name}</div>
         </div>
-        <div className="window-body flex-grow flex flex-col items-center justify-center p-4 bg-white relative">
+        <div className="window-body m-0 p-2 flex-grow flex flex-col items-center justify-center p-2 bg-white relative">
           
           {room?.state === 'lobby' && (
             <div className="text-center">
-              <div className="mb-4">
+              <div className="mb-2">
                 <img src="https://win98icons.alexmeub.com/icons/png/network_internet_pcs_installer-2.png" alt="Loading" className="mx-auto block" />
               </div>
               <h2 className="text-xl font-bold mb-2">Connected!</h2>
@@ -143,9 +143,9 @@ function Player() {
           )}
 
           {room?.state === 'question' && (
-            <div className="w-full flex-grow flex flex-col">
-              <h2 className="text-center font-bold text-xl mb-4 text-blue-900 border-b-2 border-blue-200 pb-2">Select your answer!</h2>
-              <div className="grid grid-cols-1 gap-4 flex-grow">
+            <div className="w-full h-full flex flex-col">
+              <h2 className="text-center font-bold text-xl mb-2 text-blue-900 border-b-2 border-blue-200 pb-2">Select your answer!</h2>
+              <div className="flex flex-col gap-2 flex-grow justify-around">
                 {['A', 'B', 'C', 'D'].map((letter, i) => (
                   <button 
                     key={i} 
@@ -160,14 +160,14 @@ function Player() {
                 ))}
               </div>
               {choice !== null && choice !== undefined && (
-                <p className="text-center mt-4 text-green-700 font-bold">Answer received! Waiting for others...</p>
+                <p className="text-center mt-2 text-green-700 font-bold">Answer received! Waiting for others...</p>
               )}
             </div>
           )}
 
           {room?.state === 'reveal' && (
             <div className="text-center">
-              <HelpCircle size={48} className="mx-auto mb-4 text-blue-500" />
+              <HelpCircle size={48} className="mx-auto mb-2 text-blue-500" />
               <h2 className="text-2xl font-bold mb-2">Time's Up!</h2>
               <p>Look at the main screen for the correct answer.</p>
             </div>

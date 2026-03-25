@@ -9,19 +9,16 @@ const socket = io(window.location.protocol + '//' + window.location.hostname + '
 function Host() {
   const [room, setRoom] = useState(null);
   const [timer, setTimer] = useState(0);
-  const [clippyVisible, setClippyVisible] = useState(false);
-  const [clippyMsg, setClippyMsg] = useState("");
+
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   useEffect(() => {
+    if (isMobile) return;
+    
     socket.emit('create_room');
     socket.on('room_created', (data) => console.log('Created room', data.code));
     socket.on('room_update', (roomData) => {
       setRoom(roomData);
-      
-      // Random clippy triggers
-      if (Math.random() > 0.7) {
-        showClippy("It looks like you're playing a trivia game. Would you like some help?");
-      }
     });
     socket.on('timer', (data) => setTimer(data.time));
 
@@ -32,18 +29,35 @@ function Host() {
     };
   }, []);
 
-  const showClippy = (msg) => {
-    setClippyMsg(msg);
-    setClippyVisible(true);
-    setTimeout(() => setClippyVisible(false), 5000);
-  };
-
   const startGame = () => {
     if (room && Object.keys(room.players).length > 0) {
       socket.emit('start_game', { code: room.code });
-      showClippy("Starting the game! Good luck everyone!");
     }
   };
+
+  if (isMobile) {
+    return (
+      <div className="w-screen h-screen absolute top-0 left-0 font-tahoma flex items-center justify-center bg-blue-800 z-[9999]">
+        <div className="window shadow-2xl" style={{ width: '320px' }}>
+          <div className="title-bar">
+            <div className="title-bar-text">Error</div>
+            <div className="title-bar-controls">
+              <button aria-label="Close"></button>
+            </div>
+          </div>
+          <div className="window-body">
+            <div className="flex items-center mb-4 mt-2">
+              <img src="https://win98icons.alexmeub.com/icons/png/msg_error-0.png" alt="error" className="mr-4 w-8 h-8" />
+              <p>Cannot create a room from a mobile device. Please join as a player or open this page on a PC.</p>
+            </div>
+            <div className="flex justify-center mt-4 mb-2">
+              <button onClick={() => window.location.href = '/'} style={{ width: '80px' }}>OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!room) return <div className="text-white p-5">Loading Windows XP...</div>;
 
@@ -54,7 +68,7 @@ function Host() {
       <div className="desktop">
         
         {room.state === 'lobby' && (
-          <div className="window" style={{ width: '400px', margin: '20px' }}>
+          <div className="window absolute left-[calc(50%-220px)] top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '400px' }}>
             <div className="title-bar">
               <div className="title-bar-text">Server Monitor.exe</div>
               <div className="title-bar-controls">
@@ -65,8 +79,8 @@ function Host() {
             </div>
             <div className="window-body">
               <p>Room Code: <strong>{room.code}</strong></p>
-              <div className="flex justify-center my-4 bg-white p-2 border border-black inset">
-                <QRCodeSVG value={joinUrl} size={200} />
+              <div className="flex justify-center my-6">
+                <QRCodeSVG value={joinUrl} size={200} bgColor="transparent" fgColor="#000000" style={{ filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.3))' }} />
               </div>
               <p>Waiting for players...</p>
               <button onClick={startGame} disabled={Object.keys(room.players).length === 0} style={{ width: '100%' }}>
@@ -77,15 +91,27 @@ function Host() {
         )}
 
         {room.state === 'lobby' && (
-          <div className="absolute top-5 right-5 w-64">
-            <h3 className="text-white text-shadow font-bold flex items-center mb-2"><Users className="mr-2"/> Connected Players</h3>
-            <div className="desktop-icons">
-              {Object.values(room.players).map((p, i) => (
-                <div key={i} className="desktop-icon">
-                  <img src="https://win98icons.alexmeub.com/icons/png/user_computer-0.png" alt="User" />
-                  <span>{p.name}</span>
-                </div>
-              ))}
+          <div className="window absolute left-[calc(50%+220px)] top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '300px', height: '400px' }}>
+            <div className="title-bar">
+              <div className="title-bar-text">Connected Players.exe</div>
+              <div className="title-bar-controls">
+                <button aria-label="Minimize"></button>
+                <button aria-label="Maximize"></button>
+                <button aria-label="Close"></button>
+              </div>
+            </div>
+            <div className="window-body bg-white h-[calc(100%-35px)] overflow-y-auto p-4 border border-gray-400 inset">
+              <div className="desktop-icons grid grid-cols-3 gap-4 auto-rows-max">
+                {Object.values(room.players).map((p, i) => (
+                  <div key={i} className="desktop-icon text-black text-shadow-none">
+                    <img src="https://win98icons.alexmeub.com/icons/png/user_computer-0.png" alt="User" />
+                    <span className="text-black">{p.name}</span>
+                  </div>
+                ))}
+                {Object.keys(room.players).length === 0 && (
+                  <p className="col-span-3 text-gray-500 text-center mt-10">No players connected yet.</p>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -162,11 +188,6 @@ function Host() {
           </div>
         )}
 
-      </div>
-      
-      <div className={clsx("clippy", clippyVisible && "visible")}>
-        <div className="clippy-bubble">{clippyMsg}</div>
-        <img src="https://i.ibb.co/VvzK2Bq/image.png" alt="Clippy" style={{width:'100px'}} />
       </div>
 
       <div className="taskbar">
