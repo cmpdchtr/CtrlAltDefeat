@@ -72,7 +72,26 @@ async def join_room(sid, data):
 @sio.on('start_game')
 async def start_game(sid, data):
     code = data.get('code', '').upper()
+    settings = data.get('settings', {})
+    
     if code in rooms and rooms[code]['host'] == sid:
+        room = rooms[code]
+        
+        # Apply custom settings
+        if 'timer' in settings:
+            room['default_timer'] = int(settings['timer'])
+        else:
+            room['default_timer'] = 15
+            
+        if 'fastMode' in settings:
+            room['fast_mode'] = bool(settings['fastMode'])
+        else:
+            room['fast_mode'] = False
+            
+        if 'questions' in settings and settings['questions'] and isinstance(settings['questions'], list) and len(settings['questions']) > 0:
+            room['questions'] = settings['questions']
+        
+        room['current_q'] = 0
         await next_question(code)
 
 @sio.on('answer')
@@ -83,11 +102,22 @@ async def answer(sid, data):
         if sid in rooms[code]['players'] and rooms[code]['players'][sid]['status'] == "alive":
             rooms[code]['players'][sid]['choice'] = choice
             await sio.emit('room_update', rooms[code], room=code)
+            
+            # Fast Reveal Mode check
+            if rooms[code].get('fast_mode', False):
+                alive_players = [p for p in rooms[code]['players'].values() if p['status'] == 'alive']
+                if all(p.get('choice') is not None for p in alive_players):
+                    rooms[code]['timer_skip'] = True
 
 async def game_loop(code):
     room = rooms[code]
-    for t in range(15, -1, -1):
+    timer_duration = room.get('default_timer', 15)
+    room['timer_skip'] = False
+    
+    for t in range(timer_duration, -1, -1):
         if room['state'] != 'question':
+            break
+        if room.get('timer_skip', False):
             break
         room['timer'] = t
         await sio.emit('timer', {'time': t}, room=code)
@@ -121,8 +151,17 @@ async def reveal_answer(code):
     room = rooms[code]
     room['state'] = 'reveal'
     q = room['questions'][room['current_q']]
-    correct = q['correct']
     
+    # Safely parse the correct answer robustly
+    correct_val = q['correct']
+    if isinstance(correct_val, str) and correct_val.isalpha():
+        correct = ord(correct_val.upper()) - 65
+    else:
+        try:
+            correct = int(correct_val)
+        except ValueError:
+            correct = 0 # Fallback
+            
     for sid, p in room['players'].items():
         if p['status'] == 'alive':
             if p['choice'] != correct:
@@ -130,6 +169,9 @@ async def reveal_answer(code):
                 await sio.emit('eliminated', room=sid)
             else:
                 p['score'] += 100
+    
+    # Update the room visually to show standard integer format to frontend
+    room['questions'][room['current_q']]['correct'] = correct
     
     await sio.emit('room_update', room, room=code)
     await asyncio.sleep(4)

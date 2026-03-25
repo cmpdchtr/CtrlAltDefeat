@@ -31,7 +31,36 @@ function Host() {
 
   const startGame = () => {
     if (room && Object.keys(room.players).length > 0) {
-      socket.emit('start_game', { code: room.code });
+      const timerInput = document.getElementById('timer-setting')?.value || 15;
+      const fastModeInput = document.getElementById('fast-mode')?.checked || false;
+      const fileInput = document.getElementById('q-file');
+      
+      const emitStart = (questionsObj) => {
+        socket.emit('start_game', { 
+          code: room.code, 
+          settings: {
+            timer: parseInt(timerInput, 10),
+            fastMode: fastModeInput,
+            questions: questionsObj
+          }
+        });
+      };
+
+      if (fileInput && fileInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const parsed = JSON.parse(e.target.result);
+            emitStart(parsed);
+          } catch (err) {
+            alert("Помилка читання JSON файлу. Сервер запустить стандартні питання.");
+            emitStart(null);
+          }
+        };
+        reader.readAsText(fileInput.files[0]);
+      } else {
+        emitStart(null);
+      }
     }
   };
 
@@ -203,7 +232,7 @@ function Host() {
                       <div className="flex items-center w-full">
                         <span className="w-8">{timer}s</span>
                         <div className="relative w-full h-4 border border-gray-400 bg-gray-200 ml-2 overflow-hidden shadow-inner">
-                          <div className={clsx("h-full", timer > 5 ? "bg-blue-600" : "bg-red-600")} style={{ width: `${(timer / 15) * 100}%`, transition: 'width 1s linear' }}></div>
+                          <div className={clsx("h-full", timer > 5 ? "bg-blue-600" : "bg-red-600")} style={{ width: `${(timer / (room.default_timer || 15)) * 100}%`, transition: 'width 1s linear' }}></div>
                         </div>
                       </div>
                     </fieldset>
