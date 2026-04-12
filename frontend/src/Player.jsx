@@ -54,11 +54,19 @@ function Player() {
       setStatus('dead');
     });
 
+    socket.on('kicked', (data) => {
+      setStatus('kicked');
+      setError(data.message || 'You were kicked.');
+      setJoined(false);
+      setRoom(null);
+    });
+
     return () => {
       socket.off('joined');
       socket.off('error');
       socket.off('room_update');
       socket.off('eliminated');
+      socket.off('kicked');
     };
   }, [name]);
 

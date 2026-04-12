@@ -177,7 +177,7 @@ function Host() {
         )}
 
         {room.state === 'lobby' && (
-          <div className="window absolute left-[calc(50%+420px)] top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '300px', height: '400px' }}>
+          <div className="window absolute left-[calc(50%+430px)] top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '340px', height: '450px' }}>
             <div className="title-bar">
               <div className="title-bar-text">Connected Players.exe</div>
               <div className="title-bar-controls">
@@ -186,22 +186,38 @@ function Host() {
                 <button aria-label="Close"></button>
               </div>
             </div>
-            <div className="window-body bg-white h-[calc(100%-35px)] overflow-y-auto p-4 border border-gray-400 inset">
-              <div className="desktop-icons grid grid-cols-3 gap-4 auto-rows-max">
-                {Object.values(room.players).map((p, i) => (
-                  <div key={i} className="desktop-icon text-black text-shadow-none">
-                    {p.avatar !== undefined && p.avatar !== null ? (
-                      <div className="w-10 h-10 mb-1 mx-auto">
-                        <RetroAvatar id={p.avatar} />
-                      </div>
-                    ) : (
-                      <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" className="mx-auto" />
-                    )}
-                    <span className="text-black text-center w-full block">{p.name}</span>
+            <div className="window-body bg-white h-[calc(100%-35px)] overflow-y-auto p-0 border border-gray-400 inset">
+              <div className="flex flex-col m-0 p-0 text-sm">
+                <div className="flex bg-gray-200 border-b border-gray-400 p-1 font-bold text-gray-700">
+                  <div className="w-10"></div>
+                  <div className="flex-grow">Username</div>
+                  <div className="w-16 text-center">Action</div>
+                </div>
+                {Object.entries(room.players).map(([sid, p], i) => (
+                  <div key={sid} className="flex items-center border-b border-gray-200 p-1 hover:bg-blue-100 transition-colors">
+                    <div className="w-10 flex justify-center">
+                      {p.avatar !== undefined && p.avatar !== null ? (
+                        <div className="w-6 h-6"><RetroAvatar id={p.avatar} /></div>
+                      ) : (
+                        <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" width="24" height="24" />
+                      )}
+                    </div>
+                    <div className="flex-grow truncate px-2 font-bold text-black" title={p.name}>
+                      {p.name}
+                    </div>
+                    <div className="w-16 flex justify-center">
+                      <button 
+                        onClick={() => socket.emit('kick_player', { code: room.code, player_sid: sid })}
+                        className="py-0 px-2 text-xs h-6 bg-red-100 font-bold"
+                        title={"Kick " + p.name}
+                      >
+                        KICK
+                      </button>
+                    </div>
                   </div>
                 ))}
                 {Object.keys(room.players).length === 0 && (
-                  <p className="col-span-3 text-gray-500 text-center mt-10">No players connected yet.</p>
+                  <p className="p-4 text-gray-500 text-center mt-10">No players connected yet.</p>
                 )}
               </div>
             </div>
@@ -221,26 +237,36 @@ function Host() {
             <div className="window-body bg-white h-full relative flex flex-col p-6">
               
               {room.state === 'end' ? (
-                <div className="text-center h-full flex flex-col justify-center items-center">
-                  <h1 className="text-3xl font-bold mb-4 text-blue-800">GAME OVER</h1>
-                  <table className="interactive" style={{width:'80%'}}>
-                    <thead><tr><th>Player</th><th>Score</th><th>Status</th></tr></thead>
-                    <tbody>
-                      {Object.values(room.players).sort((a,b)=>b.score - a.score).map((p, i) => (
-                        <tr key={i}>
-                          <td className="flex items-center">
-                            {p.avatar !== undefined && p.avatar !== null ? (
-                               <div className="w-5 h-5 mr-3"><RetroAvatar id={p.avatar} /></div>
-                            ) : null}
-                            <span>{p.name}</span>
-                          </td>
-                          <td>{p.score}</td>
-                          <td className={p.status==='alive' ? 'text-green-600 font-bold' : 'text-red-600'}>{p.status.toUpperCase()}</td>
+                <div className="text-center h-full flex flex-col justify-start items-center overflow-hidden">
+                  <h1 className="text-3xl font-bold mt-4 mb-4 text-blue-800">GAME OVER</h1>
+                  <div className="w-full max-w-[90%] overflow-y-auto border-2 border-gray-400 inset bg-white bg-opacity-90" style={{ maxHeight: '60vh' }}>
+                    <table className="interactive w-full">
+                      <thead className="bg-[#ece9d8] sticky top-0 border-b-2 border-gray-400 z-10">
+                        <tr>
+                          <th className="p-2 text-left w-1/2">Player</th>
+                          <th className="p-2 text-center">Score</th>
+                          <th className="p-2 text-center">Status</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <button onClick={() => window.location.reload()} className="mt-6">Restart Server</button>
+                      </thead>
+                      <tbody>
+                        {Object.values(room.players).sort((a,b)=>b.score - a.score).map((p, i) => (
+                          <tr key={i} className="hover:bg-blue-100">
+                            <td className="flex items-center text-left py-2 px-3 border-b border-gray-200">
+                              {p.avatar !== undefined && p.avatar !== null ? (
+                                 <div className="w-6 h-6 mr-3 flex-shrink-0"><RetroAvatar id={p.avatar} /></div>
+                              ) : null}
+                              <span className="font-bold truncate">{p.name}</span>
+                            </td>
+                            <td className="text-center font-mono text-lg border-b border-gray-200">{p.score}</td>
+                            <td className={`text-center font-bold border-b border-gray-200 ${p.status==='alive' ? 'text-green-600' : 'text-red-600'}`}>
+                              {p.status.toUpperCase()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <button onClick={() => window.location.reload()} className="mt-6 font-bold py-2 px-6">Restart Server</button>
                 </div>
               ) : (
                 <>

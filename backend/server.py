@@ -64,15 +64,33 @@ async def create_room(sid):
 @sio.on('join_room')
 async def join_room(sid, data):
     code = data.get('code', '').upper()
-    name = data.get('name', 'Player')
+    name = data.get('name', 'Player').strip()
     avatar = data.get('avatar')
     if code in rooms and rooms[code]['state'] == 'lobby':
+        # Check for duplicate names
+        for player_sid, p_data in rooms[code]['players'].items():
+            if p_data['name'].lower() == name.lower():
+                await sio.emit('error', {'message': f'Nickname "{name}" is already taken in this room.'}, room=sid)
+                return
+                
         await sio.enter_room(sid, code)
         rooms[code]['players'][sid] = {"name": name, "score": 0, "status": "alive", "choice": None, "avatar": avatar}
         await sio.emit('joined', {'code': code, 'name': name}, room=sid)
         await sio.emit('room_update', rooms[code], room=code)
     else:
-        await sio.emit('error', {'message': 'Room not found or game started'}, room=sid)
+        await sio.emit('error', {'message': 'Room not found or game already started'}, room=sid)
+
+@sio.on('kick_player')
+async def kick_player(sid, data):
+    code = data.get('code')
+    player_sid = data.get('player_sid')
+    
+    if code in rooms and rooms[code]['host'] == sid:
+        if player_sid in rooms[code]['players']:
+            del rooms[code]['players'][player_sid]
+            await sio.emit('kicked', {'message': 'You have been kicked from the room by the host.'}, room=player_sid)
+            await sio.leave_room(player_sid, code)
+            await sio.emit('room_update', rooms[code], room=code)
 
 @sio.on('set_avatar')
 async def set_avatar(sid, data):
