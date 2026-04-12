@@ -51,7 +51,7 @@ export const RetroAvatar = ({ id, className = "" }) => {
   ];
 
   return (
-    <svg viewBox="0 0 100 100" className={className} style={{ display: 'block', width: '100%', height: '100%' }}>
+    <svg viewBox="-10 -10 120 120" className={className} style={{ display: 'block', width: '100%', height: '100%', overflow: 'visible' }}>
       <defs>
         {/* The classic 90s pre-rendered 3D sphere gradient. Yellow top left, dark green/black bottom right */}
         <radialGradient id={`sphereGrad-${numId}`} cx="35%" cy="35%" r="65%">
@@ -70,7 +70,7 @@ export const RetroAvatar = ({ id, className = "" }) => {
         </radialGradient>
 
         {/* Pixelation effect to mimic aliased 32x32 icons */}
-        <filter id="pixelize" x="0" y="0" width="100%" height="100%">
+        <filter id="pixelize" x="-20%" y="-20%" width="140%" height="140%">
           <feComponentTransfer>
             <feFuncR type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
             <feFuncG type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
@@ -79,7 +79,7 @@ export const RetroAvatar = ({ id, className = "" }) => {
         </filter>
         
         {/* Harsh drop shadow to give it that extracted-icon feel */}
-        <filter id="drop-shadow">
+        <filter id="drop-shadow" x="-20%" y="-20%" width="140%" height="140%">
           <feDropShadow dx="3" dy="3" stdDeviation="0" floodColor="#000" floodOpacity="0.4" />
         </filter>
       </defs>
