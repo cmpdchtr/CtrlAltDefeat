@@ -65,13 +65,22 @@ async def create_room(sid):
 async def join_room(sid, data):
     code = data.get('code', '').upper()
     name = data.get('name', 'Player')
+    avatar = data.get('avatar', '😀')
     if code in rooms and rooms[code]['state'] == 'lobby':
         await sio.enter_room(sid, code)
-        rooms[code]['players'][sid] = {"name": name, "score": 0, "status": "alive", "choice": None}
+        rooms[code]['players'][sid] = {"name": name, "score": 0, "status": "alive", "choice": None, "avatar": avatar}
         await sio.emit('joined', {'code': code, 'name': name}, room=sid)
         await sio.emit('room_update', rooms[code], room=code)
     else:
         await sio.emit('error', {'message': 'Room not found or game started'}, room=sid)
+
+@sio.on('set_avatar')
+async def set_avatar(sid, data):
+    code = data.get('code')
+    avatar = data.get('avatar')
+    if code in rooms and sid in rooms[code]['players'] and rooms[code]['state'] == 'lobby':
+        rooms[code]['players'][sid]['avatar'] = avatar
+        await sio.emit('room_update', rooms[code], room=code)
 
 @sio.on('start_game')
 async def start_game(sid, data):

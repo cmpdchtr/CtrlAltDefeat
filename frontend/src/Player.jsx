@@ -15,6 +15,10 @@ function Player() {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [status, setStatus] = useState('alive'); // alive, dead, winner
+  const [avatar, setAvatar] = useState(null);
+
+  // Emojis that look like retro avatars
+  const avatars = ['😀', '😉', '😲', '🥸', '😴', '😐', '😵', '😭', '😎', '😡', '🤡', '🤠'];
 
   useEffect(() => {
     socket.on('joined', (data) => {
@@ -52,10 +56,17 @@ function Player() {
     };
   }, [name]);
 
+  const setPlayerAvatar = (selectedAvatar) => {
+    setAvatar(selectedAvatar);
+    if (room && room.state === 'lobby') {
+      socket.emit('set_avatar', { code: room.code, avatar: selectedAvatar });
+    }
+  };
+
   const joinRoom = (e) => {
     e.preventDefault();
     if (code && name) {
-      socket.emit('join_room', { code, name });
+      socket.emit('join_room', { code, name, avatar });
     }
   };
 
@@ -136,12 +147,45 @@ function Player() {
         <div className="window-body m-0 p-2 flex-grow flex flex-col items-center justify-center p-2 bg-white relative">
           
           {room?.state === 'lobby' && (
-            <div className="text-center">
-              <div className="mb-2">
-                <img src="https://win98icons.alexmeub.com/icons/png/network_internet_pcs_installer-2.png" alt="Loading" className="mx-auto block" />
-              </div>
-              <h2 className="text-xl font-bold mb-2">Connected!</h2>
-              <p>Waiting for the host to start the game. Prepare yourself.</p>
+            <div className="w-full h-full flex flex-col items-center max-w-sm mx-auto">
+              {!avatar ? (
+                // Avatar Selection Window
+                <div className="window w-full bg-[#ece9d8]">
+                  <div className="title-bar">
+                    <div className="title-bar-text">Choose an Avatar</div>
+                    <div className="title-bar-controls">
+                      <button aria-label="Minimize"></button>
+                      <button aria-label="Maximize"></button>
+                      <button aria-label="Close"></button>
+                    </div>
+                  </div>
+                  <div className="window-body p-4 bg-[#ece9d8]">
+                    <fieldset className="p-2 border border-gray-400 bg-[#ece9d8]">
+                      <legend className="px-1 text-sm font-tahoma">Click an avatar to represent you:</legend>
+                      <div className="grid grid-cols-4 gap-2 mt-2 justify-items-center">
+                        {avatars.map((a, i) => (
+                           <button 
+                             key={i} 
+                             onClick={() => setPlayerAvatar(a)}
+                             className="w-12 h-12 text-3xl flex items-center justify-center bg-gray-200 border-2 border-white border-b-gray-500 border-r-gray-500 active:border-t-gray-500 active:border-l-gray-500 active:border-b-white active:border-r-white"
+                           >
+                             {a}
+                           </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                  </div>
+                </div>
+              ) : (
+                // Connected State (Waiting for host)
+                <div className="text-center mt-4">
+                  <div className="mb-4 inline-block p-4 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200 text-6xl">
+                    {avatar}
+                  </div>
+                  <h2 className="text-xl font-bold mb-2 font-tahoma">Connected!</h2>
+                  <p className="font-tahoma">Waiting for the host to start the game.</p>
+                </div>
+              )}
             </div>
           )}
 

@@ -184,7 +184,11 @@ function Host() {
               <div className="desktop-icons grid grid-cols-3 gap-4 auto-rows-max">
                 {Object.values(room.players).map((p, i) => (
                   <div key={i} className="desktop-icon text-black text-shadow-none">
-                    <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" />
+                    {p.avatar ? (
+                      <span className="text-4xl mb-1">{p.avatar}</span>
+                    ) : (
+                      <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" />
+                    )}
                     <span className="text-black">{p.name}</span>
                   </div>
                 ))}
@@ -216,7 +220,7 @@ function Host() {
                     <tbody>
                       {Object.values(room.players).sort((a,b)=>b.score - a.score).map((p, i) => (
                         <tr key={i}>
-                          <td>{p.name}</td>
+                          <td>{p.avatar ? <span className="mr-2">{p.avatar}</span> : null}{p.name}</td>
                           <td>{p.score}</td>
                           <td className={p.status==='alive' ? 'text-green-600 font-bold' : 'text-red-600'}>{p.status.toUpperCase()}</td>
                         </tr>
