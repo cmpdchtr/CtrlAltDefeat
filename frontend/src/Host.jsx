@@ -5,7 +5,11 @@ import clsx from 'clsx';
 import { Monitor, HelpCircle, Users } from 'lucide-react';
 import { RetroAvatar } from './RetroAvatar';
 
-const socket = io(window.location.protocol + '//' + window.location.hostname + ':8000');
+// For local dev use 8000, for Docker/Prod use Nginx proxy
+const socketUrl = (window.location.port === '5173' || window.location.port === '5174') 
+  ? window.location.protocol + '//' + window.location.hostname + ':8000' 
+  : '/';
+const socket = io(socketUrl);
 
 function Host() {
   const [room, setRoom] = useState(null);
