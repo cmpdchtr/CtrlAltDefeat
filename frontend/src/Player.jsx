@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import clsx from 'clsx';
 import { LogIn, HelpCircle } from 'lucide-react';
+import { RetroAvatar } from './RetroAvatar';
 
 const socket = io(window.location.protocol + '//' + window.location.hostname + ':8000');
 
@@ -17,8 +18,8 @@ function Player() {
   const [status, setStatus] = useState('alive'); // alive, dead, winner
   const [avatar, setAvatar] = useState(null);
 
-  // Emojis that look like retro avatars
-  const avatars = ['😀', '😉', '😲', '🥸', '😴', '😐', '😵', '😭', '😎', '😡', '🤡', '🤠'];
+  // Use array indices mapping to our custom SVG avatars (0-11)
+  const avatars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
   useEffect(() => {
     socket.on('joined', (data) => {
@@ -162,14 +163,14 @@ function Player() {
                   <div className="window-body p-4 bg-[#ece9d8]">
                     <fieldset className="p-2 border border-gray-400 bg-[#ece9d8]">
                       <legend className="px-1 text-sm font-tahoma">Click an avatar to represent you:</legend>
-                      <div className="grid grid-cols-4 gap-2 mt-2 justify-items-center">
+                      <div className="flex flex-wrap justify-center gap-2 mt-2 max-w-[260px] mx-auto">
                         {avatars.map((a, i) => (
                            <button 
                              key={i} 
                              onClick={() => setPlayerAvatar(a)}
-                             className="w-12 h-12 text-3xl flex items-center justify-center bg-gray-200 border-2 border-white border-b-gray-500 border-r-gray-500 active:border-t-gray-500 active:border-l-gray-500 active:border-b-white active:border-r-white"
+                             className="w-[52px] h-[52px] p-1 flex items-center justify-center bg-gray-200 border-2 border-white border-b-gray-500 border-r-gray-500 active:border-t-gray-500 active:border-l-gray-500 active:border-b-white active:border-r-white focus:outline-none"
                            >
-                             {a}
+                             <RetroAvatar id={a} />
                            </button>
                         ))}
                       </div>
@@ -179,8 +180,8 @@ function Player() {
               ) : (
                 // Connected State (Waiting for host)
                 <div className="text-center mt-4">
-                  <div className="mb-4 inline-block p-4 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200 text-6xl">
-                    {avatar}
+                  <div className="mb-4 mx-auto w-24 h-24 p-2 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200 flex items-center justify-center">
+                    <RetroAvatar id={avatar} />
                   </div>
                   <h2 className="text-xl font-bold mb-2 font-tahoma">Connected!</h2>
                   <p className="font-tahoma">Waiting for the host to start the game.</p>

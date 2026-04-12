@@ -65,7 +65,7 @@ async def create_room(sid):
 async def join_room(sid, data):
     code = data.get('code', '').upper()
     name = data.get('name', 'Player')
-    avatar = data.get('avatar', '😀')
+    avatar = data.get('avatar')
     if code in rooms and rooms[code]['state'] == 'lobby':
         await sio.enter_room(sid, code)
         rooms[code]['players'][sid] = {"name": name, "score": 0, "status": "alive", "choice": None, "avatar": avatar}

@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { QRCodeSVG } from 'qrcode.react';
 import clsx from 'clsx';
 import { Monitor, HelpCircle, Users } from 'lucide-react';
+import { RetroAvatar } from './RetroAvatar';
 
 const socket = io(window.location.protocol + '//' + window.location.hostname + ':8000');
 
@@ -184,12 +185,14 @@ function Host() {
               <div className="desktop-icons grid grid-cols-3 gap-4 auto-rows-max">
                 {Object.values(room.players).map((p, i) => (
                   <div key={i} className="desktop-icon text-black text-shadow-none">
-                    {p.avatar ? (
-                      <span className="text-4xl mb-1">{p.avatar}</span>
+                    {p.avatar !== undefined && p.avatar !== null ? (
+                      <div className="w-10 h-10 mb-1 mx-auto">
+                        <RetroAvatar id={p.avatar} />
+                      </div>
                     ) : (
-                      <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" />
+                      <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" className="mx-auto" />
                     )}
-                    <span className="text-black">{p.name}</span>
+                    <span className="text-black text-center w-full block">{p.name}</span>
                   </div>
                 ))}
                 {Object.keys(room.players).length === 0 && (
@@ -220,7 +223,12 @@ function Host() {
                     <tbody>
                       {Object.values(room.players).sort((a,b)=>b.score - a.score).map((p, i) => (
                         <tr key={i}>
-                          <td>{p.avatar ? <span className="mr-2">{p.avatar}</span> : null}{p.name}</td>
+                          <td className="flex items-center">
+                            {p.avatar !== undefined && p.avatar !== null ? (
+                               <div className="w-5 h-5 mr-3"><RetroAvatar id={p.avatar} /></div>
+                            ) : null}
+                            <span>{p.name}</span>
+                          </td>
                           <td>{p.score}</td>
                           <td className={p.status==='alive' ? 'text-green-600 font-bold' : 'text-red-600'}>{p.status.toUpperCase()}</td>
                         </tr>
