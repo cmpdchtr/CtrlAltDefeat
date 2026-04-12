@@ -1,0 +1,5 @@
+aiohttp
+python-socketio
+uvicorn[standard]
+fastapi
+qrcode

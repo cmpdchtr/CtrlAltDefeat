@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: ctrlaltdefeat-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./backend:/app  # Optional: for hot reload in prod omit this
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ctrlaltdefeat-frontend
+    ports:
+      - "80:80"     # You can change to 3000:80 if 80 is occupied
+    depends_on:
+      - backend
+    restart: unless-stopped
