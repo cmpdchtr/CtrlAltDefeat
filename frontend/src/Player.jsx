@@ -4,10 +4,11 @@ import clsx from 'clsx';
 import { LogIn, HelpCircle } from 'lucide-react';
 import { RetroAvatar } from './RetroAvatar';
 
-// For local dev use 8000, for Docker/Prod use Nginx proxy
-const socketUrl = (window.location.port === '5173' || window.location.port === '5174') 
-  ? window.location.protocol + '//' + window.location.hostname + ':8000' 
-  : '/';
+// Use Vite's environment flags to dynamically switch URLs
+const socketUrl = import.meta.env.DEV 
+  ? `${window.location.protocol}//${window.location.hostname}:8000` 
+  : undefined;
+
 const socket = io(socketUrl);
 
 function Player() {
