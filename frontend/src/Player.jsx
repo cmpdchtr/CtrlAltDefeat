@@ -8,7 +8,10 @@ const socket = io(window.location.protocol + '//' + window.location.hostname + '
 function Player() {
   const [joined, setJoined] = useState(false);
   const [room, setRoom] = useState(null);
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('code') || '';
+  });
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [status, setStatus] = useState('alive'); // alive, dead, winner

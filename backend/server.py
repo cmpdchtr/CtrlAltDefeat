@@ -21,6 +21,10 @@ app.add_middleware(
 socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
 rooms = {}
 
+@app.get("/")
+async def root():
+    return {"status": "CtrlAltDefeat Backend is Running! This port is meant for Socket.IO connections, not for browser pages. Please open the Frontend port instead."}
+
 try:
     with open(os.path.join(os.path.dirname(__file__), "questions.json"), "r", encoding="utf-8") as f:
         questions = json.load(f)

@@ -90,7 +90,8 @@ function Host() {
 
   if (!room) return <div className="text-white p-5">Loading Windows XP...</div>;
 
-  const joinUrl = `http://${window.location.hostname}:5173`;
+  // Automatically construct the correct URL based on the current origin (handles both Docker and dev server cases)
+  const joinUrl = room ? `${window.location.origin}/?code=${room.code}` : window.location.origin;
 
   return (
     <div className="w-full h-full relative font-tahoma text-black">
