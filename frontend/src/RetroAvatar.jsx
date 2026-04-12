@@ -4,49 +4,96 @@ export const RetroAvatar = ({ id, className = "" }) => {
   const numId = parseInt(id, 10);
   if (isNaN(numId) || numId < 0 || numId > 11) return <span className={className}>{id}</span>;
 
+  // We duplicate the face strokes slightly shifted down-right with a bright distinct green/yellow to simulate the embossed 3D lighting of the 90s.
+  const renderFace = (content) => (
+    <>
+      <g stroke="#e2f542" fill="#e2f542" transform="translate(1.5, 1.5)">
+        {content}
+      </g>
+      <g stroke="#152000" fill="#152000">
+        {content}
+      </g>
+    </>
+  );
+
+  const strokes = { strokeWidth: "5.5", strokeLinecap: "round", strokeLinejoin: "round", fill: "none" };
+
   const faces = [
     // 0: Neutral
-    <g key="0"><path d="M 30,65 L 70,65" stroke="#152000" strokeWidth="6" strokeLinecap="round" fill="none"/><circle cx="35" cy="40" r="5" fill="#152000"/><circle cx="65" cy="40" r="5" fill="#152000"/></g>,
+    <g key="0">{renderFace(<><path d="M 28,68 L 72,68" {...strokes}/><ellipse cx="33" cy="42" rx="4" ry="7"/><ellipse cx="67" cy="42" rx="4" ry="7"/></>)}</g>,
     // 1: Happy closed eyes
-    <g key="1"><path d="M 25,42 Q 35,32 45,42 M 55,42 Q 65,32 75,42" stroke="#152000" strokeWidth="5" strokeLinecap="round" fill="none"/><path d="M 35,65 Q 50,75 65,65" stroke="#152000" strokeWidth="6" strokeLinecap="round" fill="none"/></g>,
+    <g key="1">{renderFace(<><path d="M 22,46 Q 33,30 44,46 M 56,46 Q 67,30 78,46" {...strokes}/><path d="M 33,65 Q 50,78 67,65" {...strokes}/></>)}</g>,
     // 2: Small Smile
-    <g key="2"><path d="M 35,65 Q 50,75 65,65" stroke="#152000" strokeWidth="6" strokeLinecap="round" fill="none"/><circle cx="35" cy="40" r="5" fill="#152000"/><circle cx="65" cy="40" r="5" fill="#152000"/></g>,
+    <g key="2">{renderFace(<><path d="M 33,65 Q 50,78 67,65" {...strokes}/><ellipse cx="33" cy="42" rx="4" ry="7"/><ellipse cx="67" cy="42" rx="4" ry="7"/></>)}</g>,
     // 3: O-mouth
-    <g key="3"><circle cx="50" cy="68" r="9" fill="none" stroke="#152000" strokeWidth="6"/><circle cx="35" cy="40" r="5" fill="#152000"/><circle cx="65" cy="40" r="5" fill="#152000"/></g>,
+    <g key="3">{renderFace(<><ellipse cx="50" cy="70" rx="10" ry="12" {...strokes}/><ellipse cx="33" cy="42" rx="4" ry="7"/><ellipse cx="67" cy="42" rx="4" ry="7"/></>)}</g>,
     // 4: Wink
-    <g key="4"><path d="M 25,40 L 45,40" stroke="#152000" strokeWidth="5" strokeLinecap="round" fill="none"/><circle cx="65" cy="40" r="5" fill="#152000"/><path d="M 35,65 Q 50,75 65,65" stroke="#152000" strokeWidth="6" strokeLinecap="round" fill="none"/></g>,
-    // 5: Wide Smile
-    <g key="5"><path d="M 25,60 Q 50,85 75,60 Q 50,70 25,60 Z" fill="#152000" /><circle cx="35" cy="40" r="5" fill="#152000"/><circle cx="65" cy="40" r="5" fill="#152000"/></g>,
+    <g key="4">{renderFace(<><path d="M 22,42 L 44,42" {...strokes}/><ellipse cx="67" cy="42" rx="4" ry="7"/><path d="M 33,65 Q 50,78 67,65" {...strokes}/></>)}</g>,
+    // 5: Wide Smile (colored inside later)
+    <g key="5">
+      {/* Dark outline + colored inside for open mouth */}
+      <g transform="translate(1.5, 1.5)"><path d="M 25,60 Q 50,90 75,60 Q 50,68 25,60 Z" fill="#e2f542"/></g>
+      <path d="M 25,60 Q 50,90 75,60 Q 50,68 25,60 Z" fill="#152000" stroke="#152000" strokeWidth="2" strokeLinejoin="round" />
+      {renderFace(<><ellipse cx="33" cy="42" rx="4" ry="7"/><ellipse cx="67" cy="42" rx="4" ry="7"/></>)}
+    </g>,
     // 6: Smirk Wink
-    <g key="6"><path d="M 25,40 Q 35,35 45,40" stroke="#152000" strokeWidth="5" strokeLinecap="round" fill="none"/><circle cx="65" cy="40" r="5" fill="#152000"/><path d="M 35,65 L 70,55" stroke="#152000" strokeWidth="6" strokeLinecap="round" fill="none"/></g>,
+    <g key="6">{renderFace(<><path d="M 22,42 Q 33,35 44,42" {...strokes}/><ellipse cx="67" cy="42" rx="4" ry="7"/><path d="M 33,68 L 74,55" {...strokes}/></>)}</g>,
     // 7: Sideways smile
-    <g key="7"><path d="M 30,70 L 70,60" stroke="#152000" strokeWidth="6" strokeLinecap="round" fill="none"/><circle cx="35" cy="40" r="5" fill="#152000"/><circle cx="65" cy="40" r="5" fill="#152000"/></g>,
+    <g key="7">{renderFace(<><path d="M 28,72 Q 50,65 72,58" {...strokes}/><ellipse cx="33" cy="42" rx="4" ry="7"/><ellipse cx="67" cy="42" rx="4" ry="7"/></>)}</g>,
     // 8: Hmm
-    <g key="8"><path d="M 30,60 L 70,70" stroke="#152000" strokeWidth="6" strokeLinecap="round" fill="none"/><circle cx="35" cy="40" r="5" fill="#152000"/><circle cx="65" cy="40" r="5" fill="#152000"/></g>,
+    <g key="8">{renderFace(<><path d="M 28,60 Q 50,65 72,72" {...strokes}/><ellipse cx="33" cy="42" rx="4" ry="7"/><ellipse cx="67" cy="42" rx="4" ry="7"/></>)}</g>,
     // 9: Sad
-    <g key="9"><path d="M 35,75 Q 50,60 65,75" stroke="#152000" strokeWidth="6" strokeLinecap="round" fill="none"/><circle cx="35" cy="40" r="5" fill="#152000"/><circle cx="65" cy="40" r="5" fill="#152000"/></g>,
+    <g key="9">{renderFace(<><path d="M 30,78 Q 50,60 70,78" {...strokes}/><ellipse cx="33" cy="42" rx="4" ry="7"/><ellipse cx="67" cy="42" rx="4" ry="7"/></>)}</g>,
     // 10: Dead
-    <g key="10"><path d="M 25,30 L 45,50 M 25,50 L 45,30 M 55,30 L 75,50 M 55,50 L 75,30" stroke="#152000" strokeWidth="5" strokeLinecap="round" fill="none"/><path d="M 30,70 Q 50,60 70,70" stroke="#152000" strokeWidth="6" strokeLinecap="round" fill="none"/></g>,
+    <g key="10">{renderFace(<><path d="M 24,32 L 42,50 M 24,50 L 42,32 M 58,32 L 76,50 M 58,50 L 76,32" {...strokes}/><path d="M 28,75 Q 50,60 72,75" {...strokes}/></>)}</g>,
     // 11: Angry
-    <g key="11"><path d="M 20,30 L 40,40 M 80,30 L 60,40" stroke="#152000" strokeWidth="5" strokeLinecap="round" fill="none"/><circle cx="35" cy="45" r="5" fill="#152000"/><circle cx="65" cy="45" r="5" fill="#152000"/><path d="M 35,75 Q 50,60 65,75" stroke="#152000" strokeWidth="6" strokeLinecap="round" fill="none"/></g>
+    <g key="11">{renderFace(<><path d="M 20,30 L 42,42 M 80,30 L 58,42" {...strokes}/><ellipse cx="33" cy="48" rx="4" ry="7"/><ellipse cx="67" cy="48" rx="4" ry="7"/><path d="M 30,75 Q 50,55 70,75" {...strokes}/></>)}</g>
   ];
 
   return (
-    <svg viewBox="0 0 100 100" className={className} style={{ display: 'block', width: '100%', height: '100%', filter: 'drop-shadow(2px 2px 2px rgba(0,0,0,0.4))' }}>
+    <svg viewBox="0 0 100 100" className={className} style={{ display: 'block', width: '100%', height: '100%' }}>
       <defs>
-        <radialGradient id={`sphereGrad-${numId}`} cx="30%" cy="30%" r="70%">
-          <stop offset="0%" stopColor="#fdfc97" />
-          <stop offset="25%" stopColor="#c5e81d" />
-          <stop offset="70%" stopColor="#4f8000" />
-          <stop offset="100%" stopColor="#1e3300" />
+        {/* The classic 90s pre-rendered 3D sphere gradient. Yellow top left, dark green/black bottom right */}
+        <radialGradient id={`sphereGrad-${numId}`} cx="35%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#fffb99" />
+          <stop offset="15%" stopColor="#dffd21" />
+          <stop offset="50%" stopColor="#81ad00" />
+          <stop offset="85%" stopColor="#2c4500" />
+          <stop offset="100%" stopColor="#0a1200" />
         </radialGradient>
-        <filter id="pixelize">
-          <feGaussianBlur stdDeviation="0.4" result="blur" />
+        
+        {/* A sharp white specular highlight to simulate 3D glossy plastic */}
+        <radialGradient id={`specular-${numId}`} cx="20%" cy="20%" r="35%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
+          <stop offset="25%" stopColor="#ffffff" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+
+        {/* Pixelation effect to mimic aliased 32x32 icons */}
+        <filter id="pixelize" x="0" y="0" width="100%" height="100%">
+          <feComponentTransfer>
+            <feFuncR type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
+            <feFuncG type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
+            <feFuncB type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
+          </feComponentTransfer>
+        </filter>
+        
+        {/* Harsh drop shadow to give it that extracted-icon feel */}
+        <filter id="drop-shadow">
+          <feDropShadow dx="3" dy="3" stdDeviation="0" floodColor="#000" floodOpacity="0.4" />
         </filter>
       </defs>
-      <circle cx="50" cy="50" r="48" fill={`url(#sphereGrad-${numId})`} filter="url(#pixelize)"/>
-      <g filter="url(#pixelize)">
-        {faces[numId]}
+      
+      <g filter="url(#drop-shadow)">
+        {/* Base 3D Sphere */}
+        <circle cx="50" cy="50" r="46" fill={`url(#sphereGrad-${numId})`} stroke="#142100" strokeWidth="1" filter="url(#pixelize)" />
+        {/* Plastic Specular Highlight */}
+        <circle cx="50" cy="50" r="46" fill={`url(#specular-${numId})`} />
+        
+        {/* Facial Features */}
+        <g filter="url(#pixelize)">
+          {faces[numId]}
+        </g>
       </g>
     </svg>
   );
