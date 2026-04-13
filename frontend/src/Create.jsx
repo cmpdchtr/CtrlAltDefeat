@@ -53,17 +53,38 @@ const Create = () => {
     downloadAnchorNode.remove();
   };
 
+  const importJSON = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        if (Array.isArray(imported)) {
+          setQuestions(imported);
+        } else {
+          alert("Invalid question format. Expected an array.");
+        }
+      } catch (err) {
+        alert("Failed to parse JSON file.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = null; // reset input
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-blue-800 p-2 font-tahoma flex flex-col box-border">
-      <div className="window flex-grow flex flex-col" style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
-        <div className="title-bar">
-          <div className="title-bar-text">Quiz Constructor.exe</div>
-          <div className="title-bar-controls">
-            <button aria-label="Minimize"></button>
-            <button aria-label="Maximize"></button>
-            <button aria-label="Close"></button>
+      <div className="flex-grow flex flex-col items-center justify-center p-2" style={{ height: 'calc(100% - 40px)' }}>
+        <div className="window flex flex-col w-full h-full max-w-4xl" style={{ maxHeight: '100%' }}>
+          <div className="title-bar flex-shrink-0">
+            <div className="title-bar-text">Quiz Constructor.exe</div>
+            <div className="title-bar-controls">
+              <button aria-label="Minimize"></button>
+              <button aria-label="Maximize"></button>
+              <button aria-label="Close"></button>
+            </div>
           </div>
-        </div>
 
         <div className="window-body m-0 p-4 bg-[#ece9d8] flex-grow flex flex-col" style={{ overflowY: 'auto' }}>
           
@@ -129,18 +150,20 @@ const Create = () => {
                 )}
 
                 {(q.type === 'multiple_choice' || q.type === 'image_options') && (
-                  <div className="grid grid-cols-2 gap-2 pl-20">
+                  <div className="grid grid-cols-2 gap-2 mt-2 px-2 pb-2 bg-gray-100 border border-gray-300">
                     {q.options.map((opt, oIdx) => (
-                      <div key={oIdx} className="flex items-center gap-2">
+                      <div key={oIdx} className="field-row">
                         <input 
                           type="radio" 
+                          id={`q-${idx}-opt-${oIdx}`}
                           name={`correct-${idx}`} 
                           checked={q.correct === oIdx}
                           onChange={() => updateQuestion(idx, 'correct', oIdx)}
                         />
+                        <label htmlFor={`q-${idx}-opt-${oIdx}`} className="ml-1 mr-2">{String.fromCharCode(65 + oIdx)}:</label>
                         <input 
                           type="text" 
-                          placeholder={q.type === 'image_options' ? 'URL' : `Option ${String.fromCharCode(65 + oIdx)}`} 
+                          placeholder={q.type === 'image_options' ? 'Image URL' : `Option ${String.fromCharCode(65 + oIdx)}`} 
                           value={opt} 
                           onChange={(e) => updateOption(idx, oIdx, e.target.value)} 
                           className="flex-grow"
@@ -151,8 +174,8 @@ const Create = () => {
                 )}
 
                 {q.type === 'text' && (
-                  <div className="field-row pl-20">
-                    <label style={{ width: '60px' }}>Answer:</label>
+                  <div className="field-row pl-4 mt-2">
+                    <label style={{ width: '120px' }}>Correct Answer:</label>
                     <input 
                       type="text" 
                       value={q.correct} 
@@ -163,7 +186,7 @@ const Create = () => {
                 )}
 
                 {q.type === 'percentage' && (
-                  <div className="field-row pl-20 bg-gray-100 p-2 border border-gray-300">
+                  <div className="field-row pl-4 mt-2 bg-gray-100 p-2 border border-gray-300">
                     <label style={{ width: '60px' }}>{q.correct}%</label>
                     <input 
                       type="range" 
@@ -176,36 +199,77 @@ const Create = () => {
                 )}
 
                 {q.type === 'image_zone' && (
-                  <div className="flex gap-4 items-center bg-gray-100 p-2 border border-gray-300 mt-2">
-                    <div className="field-row">
-                      <label style={{ width: 'auto', marginRight: '4px' }}>X %:</label>
-                      <input type="number" value={q.correct.x} onChange={e => updateZone(idx, 'x', e.target.value)} style={{ width: '50px' }} />
+                  <div className="flex flex-col gap-2 bg-gray-100 p-2 border border-gray-300 mt-2">
+                    <div className="flex gap-4 items-center mb-2">
+                      <div className="field-row">
+                        <label style={{ width: 'auto', marginRight: '4px' }}>X %:</label>
+                        <input type="number" value={q.correct.x} onChange={e => updateZone(idx, 'x', e.target.value)} style={{ width: '60px' }} />
+                      </div>
+                      <div className="field-row">
+                        <label style={{ width: 'auto', marginRight: '4px' }}>Y %:</label>
+                        <input type="number" value={q.correct.y} onChange={e => updateZone(idx, 'y', e.target.value)} style={{ width: '60px' }} />
+                      </div>
+                      <div className="field-row">
+                        <label style={{ width: 'auto', marginRight: '4px' }}>Radius (%):</label>
+                        <input type="number" value={q.correct.radius} onChange={e => updateZone(idx, 'radius', e.target.value)} style={{ width: '60px' }} />
+                      </div>
                     </div>
-                    <div className="field-row">
-                      <label style={{ width: 'auto', marginRight: '4px' }}>Y %:</label>
-                      <input type="number" value={q.correct.y} onChange={e => updateZone(idx, 'y', e.target.value)} style={{ width: '50px' }} />
-                    </div>
-                    <div className="field-row">
-                      <label style={{ width: 'auto', marginRight: '4px' }}>Radius (%):</label>
-                      <input type="number" value={q.correct.radius} onChange={e => updateZone(idx, 'radius', e.target.value)} style={{ width: '50px' }} />
-                    </div>
+                    {q.imageUrl && (
+                      <div className="border border-gray-500 bg-white p-1 text-center">
+                        <p className="text-xs text-gray-600 mb-1">Click on the image to set the center coordinates automatically.</p>
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                          <img 
+                            src={q.imageUrl} 
+                            alt="Zone preview" 
+                            style={{ maxWidth: '100%', maxHeight: '400px', cursor: 'crosshair', display: 'block', border: '1px solid black' }}
+                            onClick={(e) => {
+                              const rect = e.target.getBoundingClientRect();
+                              const x = ((e.clientX - rect.left) / rect.width) * 100;
+                              const y = ((e.clientY - rect.top) / rect.height) * 100;
+                              updateZone(idx, 'x', x.toFixed(2));
+                              updateZone(idx, 'y', y.toFixed(2));
+                            }}
+                          />
+                          {q.correct.x !== undefined && q.correct.y !== undefined && (
+                            <div style={{
+                              position: 'absolute',
+                              left: `${q.correct.x}%`,
+                              top: `${q.correct.y}%`,
+                              width: `${(q.correct.radius || 10) * 2}%`,
+                              height: `${(q.correct.radius || 10) * 2}%`,
+                              border: '2px dashed red',
+                              borderRadius: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              pointerEvents: 'none',
+                              boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
+                            }} />
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </fieldset>
             ))}
           </div>
 
-          <div className="border-t-2 border-gray-400 pt-4 mt-auto flex justify-between items-center">
-            <span className="text-sm text-gray-600">Total: {questions.length} questions</span>
-            <button 
-              onClick={exportJSON}
-              disabled={questions.length === 0}
-              className="py-2 px-6 font-bold flex items-center bg-gray-300"
-            >
-              <Download size={16} className="mr-2" /> Export JSON
-            </button>
+          <div className="border-t-2 border-gray-400 pt-3 flex-shrink-0 flex justify-between items-center bg-[#ece9d8]">
+            <span className="text-sm font-bold text-gray-800">Total: {questions.length} questions</span>
+            <div className="flex gap-2">
+              <label className="py-1 px-4 font-bold flex items-center shadow-md border-2 border-white border-b-gray-600 border-r-gray-600 active:border-t-gray-600 active:border-l-gray-600 active:border-b-white active:border-r-white bg-gray-200 cursor-pointer">
+                Import JSON
+                <input type="file" accept=".json" onChange={importJSON} style={{ display: 'none' }} />
+              </label>
+              <button 
+                onClick={exportJSON}
+                disabled={questions.length === 0}
+                className="py-1 px-4 font-bold flex items-center bg-gray-200 disabled:opacity-50"
+              >
+                <Download size={16} className="mr-2" /> Export JSON
+              </button>
+            </div>
+            </div>
           </div>
-
         </div>
       </div>
 
