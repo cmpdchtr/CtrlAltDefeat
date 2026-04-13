@@ -231,24 +231,23 @@ async def reveal_answer(code):
             if not is_correct:
                 p['status'] = 'dead'
                 await sio.emit('eliminated', room=sid)
-
             else:
                 p['score'] += 100
     
-    # Update the room visually to show standard integer format to frontend
-    room['questions'][room['current_q']]['correct'] = correct
-    
     await sio.emit('room_update', room, room=code)
+    
+    # Wait for 4 seconds to look at the reveal screen
     await asyncio.sleep(4)
     
-    room['current_q'] += 1
-    
+    # Check if game should end immediately if <= 1 players alive
     alive_players = [p for p in room['players'].values() if p['status'] == 'alive']
     if len(alive_players) <= 1:
         room['state'] = 'end'
         await sio.emit('room_update', room, room=code)
-    else:
-        await next_question(code)
+        return
+    
+    room['current_q'] += 1
+    await next_question(code)
 
 
 

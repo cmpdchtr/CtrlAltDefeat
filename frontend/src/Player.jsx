@@ -23,6 +23,9 @@ function Player() {
   const [status, setStatus] = useState('alive'); // alive, dead, winner
   const [avatar, setAvatar] = useState(null);
 
+  const [textAnswer, setTextAnswer] = useState('');
+  const [percentAnswer, setPercentAnswer] = useState(50);
+
   // Use array indices mapping to our custom SVG avatars (0-11)
   const avatars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
@@ -153,9 +156,6 @@ function Player() {
   const choice = myPlayer?.choice;
   const currentQuestion = room?.questions?.[room?.current_q];
   const qType = currentQuestion?.type || 'multiple_choice';
-  
-  const [textAnswer, setTextAnswer] = useState('');
-  const [percentAnswer, setPercentAnswer] = useState(50);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-blue-800 p-2 font-tahoma flex flex-col box-border">
