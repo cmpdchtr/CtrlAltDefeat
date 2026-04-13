@@ -182,22 +182,56 @@ async def reveal_answer(code):
     room = rooms[code]
     room['state'] = 'reveal'
     q = room['questions'][room['current_q']]
+    q_type = q.get('type', 'multiple_choice')
     
-    # Safely parse the correct answer robustly
-    correct_val = q['correct']
-    if isinstance(correct_val, str) and correct_val.isalpha():
-        correct = ord(correct_val.upper()) - 65
-    else:
-        try:
-            correct = int(correct_val)
-        except ValueError:
-            correct = 0 # Fallback
-            
     for sid, p in room['players'].items():
         if p['status'] == 'alive':
-            if p['choice'] != correct:
+            player_choice = p.get('choice')
+            is_correct = False
+            
+            if q_type == 'multiple_choice' or q_type == 'image_options':
+                correct_val = q['correct']
+                if isinstance(correct_val, str) and correct_val.isalpha():
+                    correct_idx = ord(correct_val.upper()) - 65
+                else:
+                    try:
+                        correct_idx = int(correct_val)
+                    except ValueError:
+                        correct_idx = 0
+                is_correct = (player_choice == correct_idx)
+                
+            elif q_type == 'text':
+                if player_choice and isinstance(player_choice, str):
+                    correct_ans = q['correct']
+                    if isinstance(correct_ans, list):
+                        is_correct = any(str(a).lower() == player_choice.lower() for a in correct_ans)
+                    else:
+                        is_correct = (str(correct_ans).lower() == player_choice.lower())
+                        
+            elif q_type == 'percentage':
+                try:
+                    c_val = float(q['correct'])
+                    p_val = float(player_choice)
+                    # allow 5% margin of error
+                    is_correct = (abs(c_val - p_val) <= 5.0)
+                except:
+                    pass
+            
+            elif q_type == 'image_zone':
+                if player_choice and isinstance(player_choice, dict):
+                    x = float(player_choice.get('x', 0))
+                    y = float(player_choice.get('y', 0))
+                    cx = float(q['correct'].get('x', 50))
+                    cy = float(q['correct'].get('y', 50))
+                    r = float(q['correct'].get('radius', 10))
+                    
+                    dist = ((x - cx)**2 + (y - cy)**2)**0.5
+                    is_correct = (dist <= r)
+
+            if not is_correct:
                 p['status'] = 'dead'
                 await sio.emit('eliminated', room=sid)
+
             else:
                 p['score'] += 100
     

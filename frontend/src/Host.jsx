@@ -287,28 +287,84 @@ function Host() {
                   <h2 className="text-2xl font-bold my-6 text-center">{room.questions[room.current_q].question}</h2>
                   
                   <div className="grid grid-cols-2 gap-4 flex-grow">
-                    {room.questions[room.current_q].options.map((opt, i) => {
-                      let btnClass = "text-xl h-full p-4 ";
-                      if (room.state === 'reveal') {
-                        if (i === room.questions[room.current_q].correct) btnClass += " !bg-green-500 !text-white";
-                        else btnClass += " !bg-red-500 !text-white opacity-50";
-                      }
-                      return (
-                        <button key={i} className={btnClass} disabled>
-                          {String.fromCharCode(65 + i)}: {opt}
-                        </button>
-                      );
-                    })}
+                    {room.questions[room.current_q]?.type === undefined || room.questions[room.current_q]?.type === 'multiple_choice' || room.questions[room.current_q]?.type === 'image_options' ? (
+                      room.questions[room.current_q].options.map((opt, i) => {
+                        let btnClass = "text-xl h-full p-4 ";
+                        if (room.state === 'reveal') {
+                          if (i === room.questions[room.current_q].correct) btnClass += " !bg-green-500 !text-white";
+                          else btnClass += " !bg-red-500 !text-white opacity-50";
+                        }
+                        return (
+                          <div key={i} className={clsx("flex items-center justify-center border-2 border-gray-400 font-bold", btnClass)}>
+                            {String.fromCharCode(65 + i)}: {room.questions[room.current_q].type === 'image_options' ? (
+                               <img src={opt} alt="Option" style={{maxHeight:'120px', marginLeft:'10px'}} />
+                            ) : opt}
+                          </div>
+                        );
+                      })
+                    ) : room.questions[room.current_q]?.type === 'text' ? (
+                      <div className="col-span-2 flex flex-col items-center justify-center text-4xl">
+                        {room.state === 'reveal' ? (
+                           <div className="p-8 bg-green-200 border-4 border-green-600 rounded-xl text-green-900 shadow-lg">
+                             <span className="font-bold uppercase tracking-wider block mb-2 text-sm text-green-700">Correct Answer:</span>
+                             {Array.isArray(room.questions[room.current_q].correct) ? room.questions[room.current_q].correct.join(' OR ') : room.questions[room.current_q].correct}
+                           </div>
+                        ) : (
+                           <div className="animate-pulse text-gray-500 text-2xl font-mono tracking-widest border-b-4 border-gray-300 pb-2">_ _ _ _ _ _ _ _ _ _</div>
+                        )}
+                      </div>
+                    ) : room.questions[room.current_q]?.type === 'percentage' ? (
+                      <div className="col-span-2 flex flex-col items-center justify-center p-8 bg-gray-100 border-2 border-gray-400 rounded-xl shadow-inner">
+                        {room.state === 'reveal' ? (
+                           <div className="text-6xl font-black text-blue-600 drop-shadow-md">
+                             {room.questions[room.current_q].correct}%
+                           </div>
+                        ) : (
+                           <div className="w-full max-w-xl h-8 bg-gray-300 rounded-full overflow-hidden border-2 border-gray-400 shadow-inner mt-4 relative">
+                             <div className="absolute inset-0 bg-blue-500 opacity-20 animate-pulse w-1/2"></div>
+                           </div>
+                        )}
+                        <p className="mt-4 text-gray-600 font-bold tracking-wide uppercase text-sm">Percentage Question</p>
+                      </div>
+                    ) : room.questions[room.current_q]?.type === 'image_zone' ? (
+                      <div className="col-span-2 flex justify-center items-center relative min-h-[300px]">
+                         <img src={room.questions[room.current_q].imageUrl} alt="Zone" style={{maxHeight: '400px', maxWidth: '100%', objectFit: 'contain', border: '4px solid #333', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
+                         {room.state === 'reveal' && (
+                            <div style={{
+                              position: 'absolute', 
+                              left: `${room.questions[room.current_q].correct.x}%`, 
+                              top: `${room.questions[room.current_q].correct.y}%`, 
+                              width: `${room.questions[room.current_q].correct.radius * 2}%`, 
+                              height: `${room.questions[room.current_q].correct.radius * 2}%`, 
+                              border: '4px dashed #ff0000', 
+                              borderRadius: '50%', 
+                              transform: 'translate(-50%, -50%)',
+                              boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
+                            }}></div>
+                         )}
+                      </div>
+                    ) : null}
                   </div>
 
                   {room.state === 'reveal' && (
                     <div className="mt-4 p-2 border border-blue-400 bg-blue-100 flex items-start">
                       <HelpCircle className="mr-2 text-blue-600 flex-shrink-0" />
-                      <p className="text-sm text-blue-800">The correct answer is <strong>{room.questions[room.current_q].options[room.questions[room.current_q].correct]}</strong></p>
+                      <p className="text-sm text-blue-800">
+                        {(!room.questions[room.current_q].type || room.questions[room.current_q].type === 'multiple_choice' || room.questions[room.current_q].type === 'image_options') ? (
+                          <>The correct answer is <strong>{room.questions[room.current_q].type === 'image_options' ? 'Image ' + String.fromCharCode(65 + room.questions[room.current_q].correct) : room.questions[room.current_q].options[room.questions[room.current_q].correct]}</strong></>
+                        ) : room.questions[room.current_q].type === 'text' ? (
+                          <>The correct answer is <strong>{Array.isArray(room.questions[room.current_q].correct) ? room.questions[room.current_q].correct.join(' OR ') : room.questions[room.current_q].correct}</strong></>
+                        ) : room.questions[room.current_q].type === 'percentage' ? (
+                          <>The exact percentage is <strong>{room.questions[room.current_q].correct}%</strong></>
+                        ) : room.questions[room.current_q].type === 'image_zone' ? (
+                          <>The correct zone was highlighted on the image.</>
+                        ) : ''}
+                      </p>
                     </div>
                   )}
                 </>
               )}
+
             </div>
           </div>
         )}

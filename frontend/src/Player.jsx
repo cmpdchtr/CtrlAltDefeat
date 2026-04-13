@@ -151,6 +151,11 @@ function Player() {
   if (!room) return <div className="min-h-screen bg-blue-800 flex items-center justify-center p-2 text-white">Loading...</div>;
   const myPlayer = room?.players[socket.id];
   const choice = myPlayer?.choice;
+  const currentQuestion = room?.questions?.[room?.current_q];
+  const qType = currentQuestion?.type || 'multiple_choice';
+  
+  const [textAnswer, setTextAnswer] = useState('');
+  const [percentAnswer, setPercentAnswer] = useState(50);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-blue-800 p-2 font-tahoma flex flex-col box-border">
@@ -206,19 +211,89 @@ function Player() {
           {room?.state === 'question' && (
             <div className="w-full h-full flex flex-col">
               <h2 className="text-center font-bold text-xl mb-2 text-blue-900 border-b-2 border-blue-200 pb-2">Select your answer!</h2>
-              <div className="flex flex-col gap-2 flex-grow justify-around">
-                {['A', 'B', 'C', 'D'].map((letter, i) => (
-                  <button 
-                    key={i} 
-                    className={clsx(
-                      "mobile-btn", 
-                      choice === i ? "active !bg-blue-600 !text-white" : ""
-                    )}
-                    onClick={() => submitAnswer(i)}
-                  >
-                    {letter}
-                  </button>
-                ))}
+              <div className="flex flex-col gap-2 flex-grow justify-center">
+                
+                {(qType === 'multiple_choice' || qType === 'image_options') && (
+                  <div className="flex flex-col gap-2 w-full">
+                    {['A', 'B', 'C', 'D'].map((letter, i) => (
+                      <button 
+                        key={i} 
+                        className={clsx("mobile-btn", choice === i ? "active !bg-blue-600 !text-white" : "")}
+                        onClick={() => submitAnswer(i)}
+                      >
+                        {qType === 'image_options' && currentQuestion?.options?.[i] ? (
+                           <img src={currentQuestion.options[i]} alt={`Option ${letter}`} style={{maxHeight:'80px', margin:'0 auto'}} />
+                        ) : letter}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {qType === 'text' && (
+                  <div className="flex flex-col gap-4">
+                    <input 
+                      type="text" 
+                      value={textAnswer} 
+                      onChange={e => setTextAnswer(e.target.value)} 
+                      className="border-2 border-gray-400 p-2 text-lg w-full"
+                      placeholder="Type your answer..."
+                    />
+                    <button 
+                      className={clsx("mobile-btn", choice !== undefined && choice !== null ? "active !bg-blue-600 !text-white" : "")}
+                      onClick={() => submitAnswer(textAnswer)}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                )}
+
+                {qType === 'percentage' && (
+                  <div className="flex flex-col gap-4 items-center w-full">
+                    <span className="text-xl font-bold">{percentAnswer}%</span>
+                    <input 
+                      type="range" min="0" max="100" 
+                      value={percentAnswer} 
+                      onChange={e => setPercentAnswer(parseInt(e.target.value))} 
+                      className="w-full"
+                    />
+                    <button 
+                      className={clsx("mobile-btn", choice !== undefined && choice !== null ? "active !bg-blue-600 !text-white" : "")}
+                      onClick={() => submitAnswer(percentAnswer)}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                )}
+
+                {qType === 'image_zone' && (
+                  <div className="flex flex-col items-center gap-4 w-full">
+                    <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
+                       <img 
+                         src={currentQuestion?.imageUrl} 
+                         alt="Click zone"
+                         style={{ width:'100%', height:'auto', display:'block', border:'2px solid black', cursor:'crosshair' }}
+                         onClick={(e) => {
+                           const rect = e.target.getBoundingClientRect();
+                           const x = ((e.clientX - rect.left) / rect.width) * 100;
+                           const y = ((e.clientY - rect.top) / rect.height) * 100;
+                           submitAnswer({ x, y });
+                         }}
+                       />
+                       {choice && choice.x !== undefined && (
+                          <div style={{
+                            position: 'absolute', 
+                            left: `${choice.x}%`, 
+                            top: `${choice.y}%`, 
+                            width: '10px', height: '10px', backgroundColor: 'red', 
+                            borderRadius: '50%', transform: 'translate(-50%, -50%)',
+                            border: '2px solid white'
+                          }}></div>
+                       )}
+                    </div>
+                    <p className="text-center text-sm">Tap the image to select the correct zone.</p>
+                  </div>
+                )}
+
               </div>
               {choice !== null && choice !== undefined && (
                 <p className="text-center mt-2 text-green-700 font-bold">Answer received! Waiting for others...</p>
