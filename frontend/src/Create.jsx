@@ -74,19 +74,30 @@ const Create = () => {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-blue-800 p-2 font-tahoma flex flex-col box-border">
-      <div className="flex-grow flex flex-col items-center justify-center p-2" style={{ height: 'calc(100% - 40px)' }}>
-        <div className="window flex flex-col w-full h-full max-w-4xl" style={{ maxHeight: '100%' }}>
-          <div className="title-bar flex-shrink-0">
-            <div className="title-bar-text">Quiz Constructor.exe</div>
-            <div className="title-bar-controls">
-              <button aria-label="Minimize"></button>
-              <button aria-label="Maximize"></button>
-              <button aria-label="Close"></button>
-            </div>
+    <div className="h-screen w-screen overflow-hidden bg-blue-800 font-tahoma flex flex-col box-border relative">
+      <div 
+        className="window absolute shadow-xl flex flex-col" 
+        style={{ 
+          width: '90%', 
+          height: '85%', 
+          maxWidth: '1000px',
+          left: '50%', 
+          top: '48%', 
+          transform: 'translate(-50%, -50%)',
+          zIndex: 10
+        }}
+      >
+        <div className="title-bar flex-shrink-0">
+          <div className="title-bar-text">Quiz Constructor.exe</div>
+          <div className="title-bar-controls">
+            <button aria-label="Minimize"></button>
+            <button aria-label="Maximize"></button>
+            <button aria-label="Close"></button>
           </div>
+        </div>
 
-        <div className="window-body m-0 p-4 bg-[#ece9d8] flex-grow flex flex-col" style={{ overflowY: 'auto' }}>
+        <div className="window-body m-0 p-4 bg-[#ece9d8] flex-grow flex flex-col relative" style={{ overflowY: 'auto' }}>
+
           
           <div className="flex gap-2 items-center mb-4 p-2 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200">
             <label className="font-bold whitespace-nowrap">Question Type:</label>
@@ -253,7 +264,7 @@ const Create = () => {
             ))}
           </div>
 
-          <div className="border-t-2 border-gray-400 pt-3 flex-shrink-0 flex justify-between items-center bg-[#ece9d8]">
+          <div className="border-t-2 border-gray-400 pt-3 mt-4 flex-shrink-0 flex justify-between items-center bg-[#ece9d8] sticky bottom-0 z-10 w-full px-2 pb-2">
             <span className="text-sm font-bold text-gray-800">Total: {questions.length} questions</span>
             <div className="flex gap-2">
               <label className="py-1 px-4 font-bold flex items-center shadow-md border-2 border-white border-b-gray-600 border-r-gray-600 active:border-t-gray-600 active:border-l-gray-600 active:border-b-white active:border-r-white bg-gray-200 cursor-pointer">
@@ -268,12 +279,11 @@ const Create = () => {
                 <Download size={16} className="mr-2" /> Export JSON
               </button>
             </div>
-            </div>
           </div>
         </div>
       </div>
 
-      <div className="taskbar mt-2 flex-shrink-0">
+      <div className="taskbar mt-auto flex-shrink-0 z-20 w-full fixed bottom-0 left-0">
         <button className="start-btn">
           <img src="https://win98icons.alexmeub.com/icons/png/windows_slanted-1.png" alt="start" />
           start
