@@ -54,125 +54,175 @@ const Create = () => {
   };
 
   return (
-    <div className="create-container" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif', backgroundColor: '#1a1a2e', color: 'white', minHeight: '100vh', borderRadius: '12px' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '2rem', color: '#0f34d1', textShadow: '2px 2px 0px #fff' }}>✨ QUIZ CONSTRUCTOR ✨</h1>
-      
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', justifyContent: 'center' }}>
-        <select 
-          value={currentType} 
-          onChange={(e) => setCurrentType(e.target.value)}
-          style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #4a4e69', backgroundColor: '#22223b', color: 'white' }}
-        >
-          <option value="multiple_choice">Multiple Choice</option>
-          <option value="text">Text Answer (Case Insensitive)</option>
-          <option value="image_zone">Image Zone Click</option>
-          <option value="image_options">Image Options</option>
-          <option value="percentage">Percentage (XP Slider)</option>
-        </select>
-        <button 
-          onClick={addQuestion}
-          style={{ padding: '0.5rem 1rem', borderRadius: '8px', backgroundColor: '#4caf50', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <PlusCircle size={18} /> Add Question
-        </button>
-      </div>
+    <div className="h-screen w-screen overflow-hidden bg-blue-800 p-2 font-tahoma flex flex-col box-border">
+      <div className="window flex-grow flex flex-col" style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <div className="title-bar">
+          <div className="title-bar-text">Quiz Constructor.exe</div>
+          <div className="title-bar-controls">
+            <button aria-label="Minimize"></button>
+            <button aria-label="Maximize"></button>
+            <button aria-label="Close"></button>
+          </div>
+        </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        {questions.map((q, idx) => (
-          <div key={idx} style={{ backgroundColor: '#16213e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #0f3460' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <h3 style={{ margin: 0, color: '#e94560' }}>Question {idx + 1} <span style={{ fontSize: '0.8rem', color: '#888' }}>({q.type})</span></h3>
-              <button onClick={() => removeQuestion(idx)} style={{ background: 'none', border: 'none', color: '#ff4757', cursor: 'pointer' }}><Trash2 /></button>
-            </div>
-            
-            <input 
-              type="text" 
-              placeholder="Question Text" 
-              value={q.question} 
-              onChange={(e) => updateQuestion(idx, 'question', e.target.value)} 
-              style={{ width: '100%', padding: '0.75rem', marginBottom: '1rem', borderRadius: '6px', border: '1px solid #4a4e69', backgroundColor: '#1a1a2e', color: 'white' }}
-            />
+        <div className="window-body m-0 p-4 bg-[#ece9d8] flex-grow flex flex-col" style={{ overflowY: 'auto' }}>
+          
+          <div className="flex gap-2 items-center mb-4 p-2 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200">
+            <label className="font-bold whitespace-nowrap">Question Type:</label>
+            <select 
+              value={currentType} 
+              onChange={(e) => setCurrentType(e.target.value)}
+              className="flex-grow p-1 border-2 border-gray-500 border-r-white border-b-white bg-white"
+            >
+              <option value="multiple_choice">Multiple Choice</option>
+              <option value="text">Text Answer</option>
+              <option value="image_zone">Image Zone Click</option>
+              <option value="image_options">Image Options</option>
+              <option value="percentage">Percentage Slider</option>
+            </select>
+            <button onClick={addQuestion} className="px-4 py-1 flex items-center font-bold">
+              <PlusCircle size={14} className="mr-1" /> Add
+            </button>
+          </div>
 
-            {(q.type === 'image_zone') && (
-              <input 
-                type="text" 
-                placeholder="Image URL" 
-                value={q.imageUrl || ''} 
-                onChange={(e) => updateQuestion(idx, 'imageUrl', e.target.value)} 
-                style={{ width: '100%', padding: '0.75rem', marginBottom: '1rem', borderRadius: '6px', border: '1px solid #4a4e69', backgroundColor: '#1a1a2e', color: 'white' }}
-              />
+          <div className="flex-grow flex flex-col gap-4 mb-4">
+            {questions.length === 0 && (
+              <div className="flex items-center justify-center h-full text-gray-500 italic">
+                No questions added yet. Press 'Add' to start.
+              </div>
             )}
 
-            {(q.type === 'multiple_choice' || q.type === 'image_options') && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                {q.options.map((opt, oIdx) => (
-                  <div key={oIdx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input 
-                      type="radio" 
-                      name={`correct-${idx}`} 
-                      checked={q.correct === oIdx}
-                      onChange={() => updateQuestion(idx, 'correct', oIdx)}
-                      style={{ transform: 'scale(1.2)' }}
-                    />
+            {questions.map((q, idx) => (
+              <fieldset key={idx} className="p-3 border border-gray-400 bg-white shadow-sm relative">
+                <legend className="px-2 font-bold text-blue-800 bg-white border border-gray-300">
+                  Question {idx + 1} ({q.type})
+                </legend>
+                
+                <button 
+                  onClick={() => removeQuestion(idx)} 
+                  className="absolute top-0 right-2 w-6 h-6 p-0 flex items-center justify-center !text-red-600 font-bold"
+                  title="Remove Question"
+                >
+                  <Trash2 size={14} />
+                </button>
+
+                <div className="field-row mb-3">
+                  <label style={{ width: '80px' }}>Text:</label>
+                  <input 
+                    type="text" 
+                    value={q.question} 
+                    onChange={(e) => updateQuestion(idx, 'question', e.target.value)} 
+                    className="flex-grow"
+                  />
+                </div>
+
+                {(q.type === 'image_zone') && (
+                  <div className="field-row mb-3">
+                    <label style={{ width: '80px' }}>Image URL:</label>
                     <input 
                       type="text" 
-                      placeholder={q.type === 'image_options' ? 'Image URL' : `Option ${oIdx + 1}`} 
-                      value={opt} 
-                      onChange={(e) => updateOption(idx, oIdx, e.target.value)} 
-                      style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #2a2a3e', backgroundColor: '#1a1a2e', color: 'white' }}
+                      value={q.imageUrl || ''} 
+                      onChange={(e) => updateQuestion(idx, 'imageUrl', e.target.value)} 
+                      className="flex-grow"
                     />
                   </div>
-                ))}
-              </div>
-            )}
+                )}
 
-            {q.type === 'text' && (
-              <div>
-                <label>Correct Answer:</label>
-                <input 
-                  type="text" 
-                  value={q.correct} 
-                  onChange={(e) => updateQuestion(idx, 'correct', e.target.value)} 
-                  placeholder="e.g. John Doe"
-                  style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #2a2a3e', backgroundColor: '#1a1a2e', color: 'white' }}
-                />
-              </div>
-            )}
+                {(q.type === 'multiple_choice' || q.type === 'image_options') && (
+                  <div className="grid grid-cols-2 gap-2 pl-20">
+                    {q.options.map((opt, oIdx) => (
+                      <div key={oIdx} className="flex items-center gap-2">
+                        <input 
+                          type="radio" 
+                          name={`correct-${idx}`} 
+                          checked={q.correct === oIdx}
+                          onChange={() => updateQuestion(idx, 'correct', oIdx)}
+                        />
+                        <input 
+                          type="text" 
+                          placeholder={q.type === 'image_options' ? 'URL' : `Option ${String.fromCharCode(65 + oIdx)}`} 
+                          value={opt} 
+                          onChange={(e) => updateOption(idx, oIdx, e.target.value)} 
+                          className="flex-grow"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-            {q.type === 'percentage' && (
-              <div>
-                <label>Correct Percentage: {q.correct}%</label>
-                <input 
-                  type="range" 
-                  min="0" max="100" 
-                  value={q.correct} 
-                  onChange={(e) => updateQuestion(idx, 'correct', parseInt(e.target.value))} 
-                  style={{ width: '100%', marginTop: '0.5rem' }}
-                />
-              </div>
-            )}
+                {q.type === 'text' && (
+                  <div className="field-row pl-20">
+                    <label style={{ width: '60px' }}>Answer:</label>
+                    <input 
+                      type="text" 
+                      value={q.correct} 
+                      onChange={(e) => updateQuestion(idx, 'correct', e.target.value)} 
+                      className="flex-grow"
+                    />
+                  </div>
+                )}
 
-            {q.type === 'image_zone' && (
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                <label>X (%): <input type="number" value={q.correct.x} onChange={e => updateZone(idx, 'x', e.target.value)} style={{width: '60px', background: '#333', color: '#fff', border: '1px solid #555', borderRadius: '4px', padding: '4px'}} /></label>
-                <label>Y (%): <input type="number" value={q.correct.y} onChange={e => updateZone(idx, 'y', e.target.value)} style={{width: '60px', background: '#333', color: '#fff', border: '1px solid #555', borderRadius: '4px', padding: '4px'}} /></label>
-                <label>Radius (%): <input type="number" value={q.correct.radius} onChange={e => updateZone(idx, 'radius', e.target.value)} style={{width: '60px', background: '#333', color: '#fff', border: '1px solid #555', borderRadius: '4px', padding: '4px'}} /></label>
-                <div style={{ flex: 1 }}></div>
-                <small style={{ color: '#aaa' }}>Provide coordinates referencing percentage from top-left (0-100)</small>
-              </div>
-            )}
+                {q.type === 'percentage' && (
+                  <div className="field-row pl-20 bg-gray-100 p-2 border border-gray-300">
+                    <label style={{ width: '60px' }}>{q.correct}%</label>
+                    <input 
+                      type="range" 
+                      min="0" max="100" 
+                      value={q.correct} 
+                      onChange={(e) => updateQuestion(idx, 'correct', parseInt(e.target.value))} 
+                      className="w-48"
+                    />
+                  </div>
+                )}
+
+                {q.type === 'image_zone' && (
+                  <div className="flex gap-4 items-center bg-gray-100 p-2 border border-gray-300 mt-2">
+                    <div className="field-row">
+                      <label style={{ width: 'auto', marginRight: '4px' }}>X %:</label>
+                      <input type="number" value={q.correct.x} onChange={e => updateZone(idx, 'x', e.target.value)} style={{ width: '50px' }} />
+                    </div>
+                    <div className="field-row">
+                      <label style={{ width: 'auto', marginRight: '4px' }}>Y %:</label>
+                      <input type="number" value={q.correct.y} onChange={e => updateZone(idx, 'y', e.target.value)} style={{ width: '50px' }} />
+                    </div>
+                    <div className="field-row">
+                      <label style={{ width: 'auto', marginRight: '4px' }}>Radius (%):</label>
+                      <input type="number" value={q.correct.radius} onChange={e => updateZone(idx, 'radius', e.target.value)} style={{ width: '50px' }} />
+                    </div>
+                  </div>
+                )}
+              </fieldset>
+            ))}
           </div>
-        ))}
+
+          <div className="border-t-2 border-gray-400 pt-4 mt-auto flex justify-between items-center">
+            <span className="text-sm text-gray-600">Total: {questions.length} questions</span>
+            <button 
+              onClick={exportJSON}
+              disabled={questions.length === 0}
+              className="py-2 px-6 font-bold flex items-center bg-gray-300"
+            >
+              <Download size={16} className="mr-2" /> Export JSON
+            </button>
+          </div>
+
+        </div>
       </div>
 
-      {questions.length > 0 && (
-        <button 
-          onClick={exportJSON}
-          style={{ marginTop: '2rem', width: '100%', padding: '1rem', borderRadius: '8px', backgroundColor: '#0f34d1', color: 'white', border: 'none', cursor: 'pointer', fontSize: '1.2rem', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <Download /> Export to .json
+      <div className="taskbar mt-2 flex-shrink-0">
+        <button className="start-btn">
+          <img src="https://win98icons.alexmeub.com/icons/png/windows_slanted-1.png" alt="start" />
+          start
         </button>
-      )}
+        <div className="flex-grow flex items-center px-2">
+          <div className="px-3 py-1 bg-blue-700 bg-opacity-50 text-white rounded border border-blue-400 shadow-inner flex items-center text-xs cursor-default">
+            Quiz Constructor.exe
+          </div>
+        </div>
+        <div className="system-tray">
+          <span>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      </div>
     </div>
   );
 };
