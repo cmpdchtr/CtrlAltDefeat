@@ -53,7 +53,7 @@ async def create_room(sid):
         "state": "lobby",
         "players": {},
         "current_q": 0,
-        "questions": random.sample(questions, len(questions)),
+        "questions": list(questions), # Copy questions, don't shuffle yet
         "host": sid,
         "timer": 0
     }
@@ -121,6 +121,9 @@ async def start_game(sid, data):
             
         if 'questions' in settings and settings['questions'] and isinstance(settings['questions'], list) and len(settings['questions']) > 0:
             room['questions'] = settings['questions']
+
+        if settings.get('shuffle', True):
+            random.shuffle(room['questions'])
         
         room['current_q'] = 0
         await next_question(code)

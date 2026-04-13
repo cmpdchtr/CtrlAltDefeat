@@ -167,7 +167,7 @@ function Player() {
           
           {room?.state === 'lobby' && (
             <div className="w-full h-full flex flex-col items-center max-w-sm mx-auto">
-              {!avatar ? (
+              {avatar === null ? (
                 // Avatar Selection Window
                 <div className="window w-full bg-[#ece9d8]">
                   <div className="title-bar">

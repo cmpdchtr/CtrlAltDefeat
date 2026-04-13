@@ -41,6 +41,7 @@ function Host() {
     if (room && Object.keys(room.players).length > 0) {
       const timerInput = document.getElementById('timer-setting')?.value || 15;
       const fastModeInput = document.getElementById('fast-mode')?.checked || false;
+      const shuffleInput = document.getElementById('shuffle-q')?.checked ?? true;
       const fileInput = document.getElementById('q-file');
       
       const emitStart = (questionsObj) => {
@@ -49,6 +50,7 @@ function Host() {
           settings: {
             timer: parseInt(timerInput, 10),
             fastMode: fastModeInput,
+            shuffle: shuffleInput,
             questions: questionsObj
           }
         });
@@ -158,6 +160,10 @@ function Host() {
                   <div className="field-row mb-2">
                     <label htmlFor="q-file">Custom JSON Questions:</label>
                     <input id="q-file" type="file" accept=".json" />
+                  </div>
+                  <div className="field-row mb-2">
+                    <input id="shuffle-q" type="checkbox" defaultChecked />
+                    <label htmlFor="shuffle-q">Shuffle Questions</label>
                   </div>
                   <div className="field-row">
                     <input id="fast-mode" type="checkbox" />
@@ -275,10 +281,18 @@ function Host() {
                   <div className="mb-4">
                     <fieldset>
                       <legend>Timer</legend>
-                      <div className="flex items-center w-full">
-                        <span className="w-8">{timer}s</span>
-                        <div className="relative w-full h-4 border border-gray-400 bg-gray-200 ml-2 overflow-hidden shadow-inner">
-                          <div className={clsx("h-full", timer > 5 ? "bg-blue-600" : "bg-red-600")} style={{ width: `${(timer / (room.default_timer || 15)) * 100}%`, transition: 'width 1s linear' }}></div>
+                      <div className="flex items-center w-full mt-1">
+                        <span className="w-8 font-bold text-sm tracking-widest">{timer}s</span>
+                        <div className="flex-grow flex border-2 border-white border-l-gray-500 border-t-gray-500 bg-white h-[22px] p-[2px] gap-[2px]">
+                          {Array.from({ length: 30 }).map((_, i) => (
+                            <div 
+                              key={i} 
+                              className={clsx(
+                                "flex-1 h-full", 
+                                (i / 30) < (timer / (room.default_timer || 15)) ? (timer > 5 ? "bg-[#0000AA]" : "bg-[#AA0000]") : "bg-transparent"
+                              )}
+                            />
+                          ))}
                         </div>
                       </div>
                     </fieldset>
