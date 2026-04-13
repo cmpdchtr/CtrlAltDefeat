@@ -51,7 +51,7 @@ export const RetroAvatar = ({ id, className = "" }) => {
   ];
 
   return (
-    <svg viewBox="-10 -10 120 120" className={className} style={{ display: 'block', width: '100%', height: '100%', overflow: 'visible' }}>
+    <svg viewBox="-10 -10 120 120" className={className} style={{ display: 'block', width: '100%', height: '100%' }}>
       <defs>
         {/* The classic 90s pre-rendered 3D sphere gradient. Yellow top left, dark green/black bottom right */}
         <radialGradient id={`sphereGrad-${numId}`} cx="35%" cy="35%" r="65%">

@@ -4,6 +4,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import clsx from 'clsx';
 import { Monitor, HelpCircle, Users } from 'lucide-react';
 import { RetroAvatar } from './RetroAvatar';
+import Confetti from 'react-confetti';
+import { useWindowSize } from 'react-use';
 
 // Use Vite's environment flags to dynamically switch URLs
 const socketUrl = import.meta.env.DEV 
@@ -194,14 +196,12 @@ function Host() {
                   <div className="w-16 text-center">Action</div>
                 </div>
                 {Object.entries(room.players).map(([sid, p], i) => (
-                  <div key={sid} className="flex items-center border-b border-gray-200 p-1 hover:bg-blue-100 transition-colors h-10 overflow-hidden">
-                    <div className="w-10 flex justify-center flex-shrink-0 items-center">
+                  <div key={sid} className="flex items-center border-b border-gray-200 p-1 hover:bg-blue-100 transition-colors" style={{ height: '40px', overflow: 'hidden' }}>
+                    <div className="flex justify-center items-center" style={{ width: '40px', flexShrink: 0 }}>
                       {p.avatar !== undefined && p.avatar !== null ? (
-                        <div style={{ width: '28px', height: '28px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyItems: 'center' }}>
-                           <RetroAvatar id={p.avatar} />
-                        </div>
+                        <div style={{ width: '32px', height: '32px', flexShrink: 0 }}><RetroAvatar id={p.avatar} /></div>
                       ) : (
-                        <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" width="24" height="24" />
+                        <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" style={{ width: '24px', height: '24px', flexShrink: 0 }} />
                       )}
                     </div>
                     <div className="flex-grow truncate px-2 font-bold text-black" title={p.name}>
@@ -238,55 +238,39 @@ function Host() {
             </div>
             <div className="window-body bg-white h-full relative flex flex-col p-6">
               
-              {room.state === 'end' ? (() => {
-                const players = Object.values(room.players);
-                const winner = players.sort((a,b) => b.score - a.score)[0] || {name: "No One", score: 0};
-                const losers = players.filter(p => !p.ai && p.name !== winner.name);
-                return (
-                <div className="relative w-full h-full flex flex-col items-center justify-center p-8 overflow-hidden bg-[#3a6ea5] inset">
-                  {/* Confetti / Celebration window for the winner */}
-                  <div className="z-10 bg-[#ece9d8] border border-white border-b-gray-400 border-r-gray-400 p-1 shadow-2xl w-96 max-w-full">
-                    <div className="bg-gradient-to-r from-blue-700 to-blue-400 text-white font-bold px-2 py-1 flex items-center justify-between shadow-sm">
-                      <span className="flex items-center">
-                         <img src="https://win98icons.alexmeub.com/icons/png/chm-2.png" alt="Winner" className="w-4 h-4 mr-2" />
-                         WINNER.EXE
-                      </span>
-                      <button className="bg-[#ece9d8] text-black w-4 h-4 border border-white border-b-gray-500 border-r-gray-500 flex items-center justify-center cursor-pointer font-bold text-xs" onClick={() => window.location.reload()}>X</button>
-                    </div>
-                    <div className="p-4 bg-white border border-gray-400 flex flex-col items-center gap-4 text-center">
-                      <h2 className="text-3xl font-black text-yellow-500 drop-shadow-md">🎉 {winner.name} 🎉</h2>
-                      <div className="w-40 h-40 flex justify-center items-center drop-shadow-xl transform scale-125 mb-4">
-                        {winner.avatar !== undefined ? <RetroAvatar id={winner.avatar} /> : <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" className="w-full h-full" />}
-                      </div>
-                      <p className="text-xl font-bold bg-[#ece9d8] text-black px-4 py-2 border border-blue-300 w-full shadow-inner">Score: {winner.score}</p>
-                      <button onClick={() => window.location.reload()} className="mt-2 font-bold py-2 px-8 bg-[#ece9d8] text-black border border-t-white border-l-white border-b-black border-r-black active:border-t-black active:border-l-black active:border-b-white active:border-r-white drop-shadow">Play Again</button>
-                    </div>
+              {room.state === 'end' ? (
+                <div className="text-center h-full flex flex-col justify-start items-center overflow-hidden">
+                  <h1 className="text-3xl font-bold mt-4 mb-4 text-blue-800">GAME OVER</h1>
+                  <div className="w-full max-w-[90%] overflow-y-auto border-2 border-gray-400 inset bg-white bg-opacity-90" style={{ maxHeight: '60vh' }}>
+                    <table className="interactive w-full">
+                      <thead className="bg-[#ece9d8] sticky top-0 border-b-2 border-gray-400 z-10">
+                        <tr>
+                          <th className="p-2 text-left w-1/2">Player</th>
+                          <th className="p-2 text-center">Score</th>
+                          <th className="p-2 text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.values(room.players).sort((a,b)=>b.score - a.score).map((p, i) => (
+                          <tr key={i} className="hover:bg-blue-100 h-10">
+                            <td className="flex items-center text-left py-2 px-3 border-b border-gray-200">
+                              {p.avatar !== undefined && p.avatar !== null ? (
+                                 <div style={{ width: '28px', height: '28px', marginRight: '12px', flexShrink: 0 }}><RetroAvatar id={p.avatar} /></div>
+                              ) : null}
+                              <span className="font-bold truncate">{p.name}</span>
+                            </td>
+                            <td className="text-center font-mono text-lg border-b border-gray-200">{p.score}</td>
+                            <td className={`text-center font-bold border-b border-gray-200 ${p.status==='alive' ? 'text-green-600' : 'text-red-600'}`}>
+                              {p.status.toUpperCase()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  {/* Graveyard for losers */}
-                  <div className="absolute bottom-0 left-0 w-full h-32 pointer-events-none flex flex-wrap justify-center items-end opacity-70 overflow-visible" style={{marginBottom: '-16px'}}>
-                    {losers.map((loser, idx) => {
-                      const randomRotate = (Math.random() - 0.5) * 160;
-                      const randomLeft = Math.random() * 80 + 10;
-                      const zIndex = Math.floor(Math.random() * 10);
-                      return (
-                        <div key={idx} className="absolute transition-transform duration-1000 ease-in-out drop-shadow-md filter grayscale"
-                             style={{
-                               left: `${randomLeft}%`,
-                               bottom: '0px',
-                               transform: `rotate(${randomRotate}deg) scale(0.6) translateY(20px)`,
-                               zIndex,
-                               width: '80px',
-                               height: '80px'
-                             }}
-                             title={`${loser.name} (Score: ${loser.score})`}
-                        >
-                           {loser.avatar !== undefined ? <RetroAvatar id={loser.avatar} /> : <img src="https://win98icons.alexmeub.com/icons/png/msagent-4.png" alt="User" className="w-full h-full" />}
-                        </div>
-                      )
-                    })}
-                  </div>
+                  <button onClick={() => window.location.reload()} className="mt-6 font-bold py-2 px-6">Restart Server</button>
                 </div>
-              );})() : (
+              ) : (
                 <>
                   <div className="mb-4">
                     <fieldset>
