@@ -283,16 +283,24 @@ function Host() {
                       <legend>Timer</legend>
                       <div className="flex items-center w-full mt-1">
                         <span className="w-8 font-bold text-sm tracking-widest">{timer}s</span>
-                        <div className="flex-grow flex border-2 border-white border-l-gray-500 border-t-gray-500 bg-white h-[22px] p-[2px] gap-[2px]">
-                          {Array.from({ length: 30 }).map((_, i) => (
-                            <div 
-                              key={i} 
-                              className={clsx(
-                                "flex-1 h-full", 
-                                (i / 30) < (timer / (room.default_timer || 15)) ? (timer > 5 ? "bg-[#0000AA]" : "bg-[#AA0000]") : "bg-transparent"
-                              )}
-                            />
-                          ))}
+                        <div className="flex-grow flex border border-gray-400 bg-[#f0f0f0] h-[22px] p-[2px] gap-[2px] rounded-[3px] shadow-inner" style={{boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.1)'}}>
+                          {Array.from({ length: 30 }).map((_, i) => {
+                            const isActive = (i / 30) < (timer / (room.default_timer || 15));
+                            const isLow = timer <= 5;
+                            return (
+                              <div 
+                                key={i} 
+                                className={clsx(
+                                  "flex-1 h-full rounded-[1px]", 
+                                  isActive 
+                                    ? (isLow 
+                                        ? "bg-gradient-to-b from-[#ff8e8e] via-[#e52222] to-[#b30000]" 
+                                        : "bg-gradient-to-b from-[#adffad] via-[#24d924] to-[#00a800]") 
+                                    : "bg-transparent"
+                                )}
+                              />
+                            );
+                          })}
                         </div>
                       </div>
                     </fieldset>
