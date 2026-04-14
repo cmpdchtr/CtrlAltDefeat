@@ -152,7 +152,7 @@ function Player() {
                 <Monitor size={16} /> Host a Game
               </button>
               <button type="button" onClick={() => navigate('/create')} className="w-full flex items-center justify-center gap-2 py-2">
-                <PlusCircle size={16} /> Create a Room
+                <PlusCircle size={16} /> Create a Quiz
               </button>
             </div>
           </div>
