@@ -112,6 +112,14 @@ function Player() {
             </div>
             <div className="flex justify-end mt-4"><button type="submit" style={{width: '80px', marginRight: '8px'}}>{t('player.ok')}</button></div>
           </form>
+          <div className="pt-4 border-t border-gray-300 flex flex-col" style={{ marginTop: '12px' }}>
+            <button type="button" onClick={() => window.open('/host', '_blank')} className="w-full flex items-center justify-center gap-2 py-2" style={{ marginBottom: '10px' }}>
+              <Monitor size={16} /> {t('player.hostGame')}
+            </button>
+            <button type="button" onClick={() => window.open('/create', '_blank')} className="w-full flex items-center justify-center gap-2 py-2">
+              <PlusCircle size={16} /> {t('player.createRoom')}
+            </button>
+          </div>
         </div>
       </div>
     </div>
