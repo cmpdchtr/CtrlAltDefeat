@@ -148,11 +148,11 @@ function Player() {
               </div>
             </form>
             <div className="pt-4 border-t border-gray-300 flex flex-col" style={{ marginTop: '12px' }}>
-              <button type="button" onClick={() => navigate('/host')} className="w-full flex items-center justify-center gap-2 py-2" style={{ marginBottom: '10px' }}>
+              <button type="button" onClick={() => window.open('/host', '_blank')} className="w-full flex items-center justify-center gap-2 py-2" style={{ marginBottom: '10px' }}>
                 <Monitor size={16} /> Host a Game
               </button>
-              <button type="button" onClick={() => navigate('/create')} className="w-full flex items-center justify-center gap-2 py-2">
-                <PlusCircle size={16} /> Create a Quiz
+              <button type="button" onClick={() => window.open('/create', '_blank')} className="w-full flex items-center justify-center gap-2 py-2">
+                <PlusCircle size={16} /> Create a Room
               </button>
             </div>
           </div>
