@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import clsx from 'clsx';
-import { LogIn, HelpCircle } from 'lucide-react';
+import { LogIn, HelpCircle, Monitor, PlusCircle } from 'lucide-react';
 import { RetroAvatar } from './RetroAvatar';
 
 // Use Vite's environment flags to dynamically switch URLs
@@ -12,6 +13,7 @@ const socketUrl = import.meta.env.DEV
 const socket = io(socketUrl);
 
 function Player() {
+  const navigate = useNavigate();
   const [joined, setJoined] = useState(false);
   const [room, setRoom] = useState(null);
   const [code, setCode] = useState(() => {
@@ -145,6 +147,14 @@ function Player() {
                 <button type="button" onClick={() => {setCode(''); setName('');}} style={{width: '80px'}}>Cancel</button>
               </div>
             </form>
+            <div className="mt-4 pt-4 border-t border-gray-300 flex flex-col gap-2">
+              <button type="button" onClick={() => navigate('/host')} className="w-full flex items-center justify-center gap-2 py-1">
+                <Monitor size={16} /> Host a Game
+              </button>
+              <button type="button" onClick={() => navigate('/create')} className="w-full flex items-center justify-center gap-2 py-1">
+                <PlusCircle size={16} /> Create a Room
+              </button>
+            </div>
           </div>
         </div>
       </div>
