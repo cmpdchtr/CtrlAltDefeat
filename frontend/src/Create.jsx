@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PlusCircle, Trash2, Image as ImageIcon, Download, Settings } from 'lucide-react';
+import { PlusCircle, Trash2, Image as ImageIcon, Download, Settings, Plus, Minus } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 
@@ -12,7 +12,7 @@ const Create = () => {
     let newQ = { type: currentType, question: '', options: [] };
     if (currentType === 'multiple_choice' || currentType === 'image_options') {
       newQ.options = ['', '', '', ''];
-      newQ.correct = 0;
+      newQ.correct = [0]; // Now an array of indices
     } else if (currentType === 'text') {
       newQ.correct = '';
     } else if (currentType === 'percentage') {
@@ -33,6 +33,41 @@ const Create = () => {
   const updateOption = (qIndex, oIndex, value) => {
     const updated = [...questions];
     updated[qIndex].options[oIndex] = value;
+    setQuestions(updated);
+  };
+
+  const addOptionField = (qIndex) => {
+    const updated = [...questions];
+    if (updated[qIndex].options.length < 8) {
+      updated[qIndex].options.push('');
+      setQuestions(updated);
+    }
+  };
+
+  const removeOptionField = (qIndex, oIndex) => {
+    const updated = [...questions];
+    if (updated[qIndex].options.length > 2) {
+      updated[qIndex].options.splice(oIndex, 1);
+      // Adjust correct indices
+      updated[qIndex].correct = updated[qIndex].correct
+        .filter(idx => idx !== oIndex)
+        .map(idx => (idx > oIndex ? idx - 1 : idx));
+      if (updated[qIndex].correct.length === 0) updated[qIndex].correct = [0];
+      setQuestions(updated);
+    }
+  };
+
+  const toggleCorrectOption = (qIndex, oIndex) => {
+    const updated = [...questions];
+    const correctArr = Array.isArray(updated[qIndex].correct) ? updated[qIndex].correct : [0];
+    
+    if (correctArr.includes(oIndex)) {
+      if (correctArr.length > 1) {
+        updated[qIndex].correct = correctArr.filter(idx => idx !== oIndex);
+      }
+    } else {
+      updated[qIndex].correct = [...correctArr, oIndex].sort((a, b) => a - b);
+    }
     setQuestions(updated);
   };
 
@@ -64,7 +99,14 @@ const Create = () => {
       try {
         const imported = JSON.parse(event.target.result);
         if (Array.isArray(imported)) {
-          setQuestions(imported);
+          // Backward compatibility for old format (single correct index)
+          const sanitized = imported.map(q => {
+            if ((q.type === 'multiple_choice' || q.type === 'image_options') && !Array.isArray(q.correct)) {
+              q.correct = [parseInt(q.correct) || 0];
+            }
+            return q;
+          });
+          setQuestions(sanitized);
         } else {
           alert("Invalid question format. Expected an array.");
         }
@@ -80,13 +122,10 @@ const Create = () => {
     const rawUrl = prompt(t('create.waygroundPrompt', 'Вставте посилання на Wayground (API/JSON):'));
     if (!rawUrl) return;
     
-    // Advanced normalization to target public Quizizz API
     let url = rawUrl;
     const quizIdMatch = rawUrl.match(/quiz\/([a-f0-9]{24})/i);
     if (quizIdMatch && quizIdMatch[1]) {
-       // Convert any Wayground/Quizizz link to the public data API
        url = `https://quizizz.com/api/main/quiz/${quizIdMatch[1]}`;
-       console.log("Normalized URL to public API:", url);
     }
 
     const backendUrl = import.meta.env.DEV 
@@ -107,68 +146,45 @@ const Create = () => {
       };
 
       try {
-        console.log("Attempting import via local proxy...");
         response = await fetchWithTimeout(urlToFetch, { timeout: 5000 });
-        if (!response.ok) throw new Error(`Local proxy returned ${response.status}`);
+        if (!response.ok) throw new Error(`Local proxy error`);
       } catch (e) {
-        console.warn("Local proxy failed or timed out, trying public fallback (corsproxy.io)...", e.message);
         urlToFetch = `https://corsproxy.io/?${encodeURIComponent(url)}`;
         response = await fetchWithTimeout(urlToFetch, { timeout: 10000 });
       }
 
-      if (!response.ok) {
-        throw new Error(`All proxies failed. Last status: ${response.status}`);
-      }
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
 
-      const contentType = response.headers.get("content-type") || "";
-      const isJson = contentType.includes("application/json");
-      
-      let data;
-      if (isJson) {
-        data = await response.json();
-      } else {
-        // Force fallback if we got HTML instead of JSON
-        console.warn("Proxy returned non-JSON, attempting fallback to corsproxy...");
-        const fallbackUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-        const fbRes = await fetchWithTimeout(fallbackUrl, { timeout: 10000 });
-        if (!fbRes.ok) throw new Error("Fallback proxy also failed");
-        data = await fbRes.json();
-      }
-      
-      if (data.error) {
-        console.error("Proxy reported error:", data);
-        throw new Error(data.error);
-      }
-
-      // Map format to CtrlAltDefeat format
-      let wayQuestions = [];
-      // Structure for public API: data.data.quiz.info.questions
-      if (data.data?.quiz?.info?.questions) {
-        wayQuestions = data.data.quiz.info.questions;
-      } else if (data.questions) {
-        wayQuestions = data.questions;
-      } else if (Array.isArray(data)) {
-        wayQuestions = data;
-      }
+      let wayQuestions = data.data?.quiz?.info?.questions || data.questions || (Array.isArray(data) ? data : []);
 
       const mapped = wayQuestions.map(q => {
         const structure = q.structure || {};
-        const qText = structure.query?.text || q.text || "Question";
-        const options = structure.options || q.options || [];
+        const qText = (structure.query?.text || q.text || "Question").replace(/<[^>]*>?/gm, '').trim();
+        const rawOptions = structure.options || q.options || [];
         
-        let type = "multiple_choice";
-        let correct = 0;
-        let opts = options.map(o => (o.text || "").replace(/<[^>]*>?/gm, '').trim());
+        // Extract correct indices - Wayground usually has a 'settings' or 'answer' field but sometimes it's in the options
+        let correctIndices = [];
+        const opts = rawOptions.map((o, idx) => {
+          if (o.isCorrect === true || o.correct === true) correctIndices.push(idx);
+          return (o.text || "").replace(/<[^>]*>?/gm, '').trim();
+        });
 
-        // Find correct answer index
-        const correctIdx = options.findIndex(o => o.isCorrect === true || o.correct === true);
-        correct = correctIdx !== -1 ? correctIdx : 0;
+        // If no correct answer found in options, try to find it in 'answer' field
+        if (correctIndices.length === 0) {
+          const ans = structure.answer;
+          if (Array.isArray(ans)) correctIndices = ans.map(a => parseInt(a));
+          else if (ans !== undefined) correctIndices = [parseInt(ans)];
+        }
+
+        // Final fallback
+        if (correctIndices.length === 0) correctIndices = [0];
 
         return {
-          type,
-          question: qText.replace(/<[^>]*>?/gm, '').trim(),
-          options: opts.length >= 4 ? opts.slice(0,4) : [...opts, "", "", "", ""].slice(0,4),
-          correct
+          type: "multiple_choice",
+          question: qText,
+          options: opts.length > 0 ? opts : ["Option A", "Option B"],
+          correct: correctIndices
         };
       });
 
@@ -176,17 +192,17 @@ const Create = () => {
         setQuestions(prev => [...prev, ...mapped]);
         alert(t('create.importSuccess', 'Успішно імпортовано!'));
       } else {
-        alert(t('create.importError', 'Не вдалося знайти питання у файлі.'));
+        alert(t('create.importError', 'Не вдалося знайти питання.'));
       }
     } catch (err) {
-      alert(t('create.importFailed', 'Не вдалося завантажити дані за посиланням. Перевірте консоль для деталей.'));
-      console.error("Wayground import error:", err);
+      alert(t('create.importFailed', 'Помилка імпорту.'));
+      console.error(err);
     }
   };
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-blue-800 font-tahoma flex flex-col box-border relative">
-      <LanguageSwitcher />
+      <LanguageSwitcher position="top-right" />
       <div 
         className="window absolute shadow-xl flex flex-col" 
         style={{ 
@@ -210,7 +226,6 @@ const Create = () => {
 
         <div className="window-body m-0 p-4 bg-[#ece9d8] flex-grow flex flex-col relative" style={{ overflowY: 'auto' }}>
 
-          
           <div className="flex gap-2 items-center mb-4 p-2 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200">
             <label className="font-bold whitespace-nowrap">{t('create.questionType')}</label>
             <select 
@@ -239,7 +254,7 @@ const Create = () => {
             {questions.map((q, idx) => (
               <fieldset key={idx} className="p-3 border border-gray-400 bg-white shadow-sm relative">
                 <legend className="px-2 font-bold text-blue-800 bg-white border border-gray-300">
-                  {t('create.questionN', { num: idx + 1 })} ({t(`create.type${q.type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')}`) || q.type})
+                  {t('create.questionN', { num: idx + 1 })} ({q.type})
                 </legend>
                 
                 <button 
@@ -260,64 +275,50 @@ const Create = () => {
                   />
                 </div>
 
-                {(q.type === 'image_zone') && (
-                  <div className="field-row mb-3">
-                    <label style={{ width: '80px' }}>{t('create.imageUrl')}</label>
-                    <input 
-                      type="text" 
-                      value={q.imageUrl || ''} 
-                      onChange={(e) => updateQuestion(idx, 'imageUrl', e.target.value)} 
-                      className="flex-grow"
-                    />
-                  </div>
-                )}
-
                 {(q.type === 'multiple_choice' || q.type === 'image_options') && (
-                  <div className="grid grid-cols-2 gap-2 mt-2 px-2 pb-2 bg-gray-100 border border-gray-300">
-                    {q.options.map((opt, oIdx) => (
-                      <div key={oIdx} className="field-row">
-                        <input 
-                          type="radio" 
-                          id={`q-${idx}-opt-${oIdx}`}
-                          name={`correct-${idx}`} 
-                          checked={q.correct === oIdx}
-                          onChange={() => updateQuestion(idx, 'correct', oIdx)}
-                        />
-                        <label htmlFor={`q-${idx}-opt-${oIdx}`} className="ml-1 mr-2">{String.fromCharCode(65 + oIdx)}:</label>
-                        <input 
-                          type="text" 
-                          placeholder={q.type === 'image_options' ? 'Image URL' : t('create.option', { letter: String.fromCharCode(65 + oIdx) })} 
-                          value={opt} 
-                          onChange={(e) => updateOption(idx, oIdx, e.target.value)} 
-                          className="flex-grow"
-                        />
-                      </div>
-                    ))}
+                  <div className="flex flex-col gap-2 mt-2 px-2 pb-2 bg-gray-100 border border-gray-300">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                      {q.options.map((opt, oIdx) => (
+                        <div key={oIdx} className="field-row">
+                          <input 
+                            type="checkbox" 
+                            id={`q-${idx}-opt-${oIdx}`}
+                            checked={Array.isArray(q.correct) ? q.correct.includes(oIdx) : q.correct === oIdx}
+                            onChange={() => toggleCorrectOption(idx, oIdx)}
+                          />
+                          <label htmlFor={`q-${idx}-opt-${oIdx}`} className="ml-1 mr-2">{String.fromCharCode(65 + oIdx)}:</label>
+                          <input 
+                            type="text" 
+                            placeholder={q.type === 'image_options' ? 'Image URL' : t('create.option', { letter: String.fromCharCode(65 + oIdx) })} 
+                            value={opt} 
+                            onChange={(e) => updateOption(idx, oIdx, e.target.value)} 
+                            className="flex-grow"
+                          />
+                          <button onClick={() => removeOptionField(idx, oIdx)} className="ml-1 p-1 h-6 w-6 flex items-center justify-center bg-red-100 text-red-700 border border-gray-400">
+                            <Minus size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-center mt-2">
+                       <button onClick={() => addOptionField(idx)} className="flex items-center gap-1 text-xs px-3 py-1 font-bold">
+                         <Plus size={12} /> Add Option
+                       </button>
+                    </div>
                   </div>
                 )}
 
                 {q.type === 'text' && (
                   <div className="field-row pl-4 mt-2">
                     <label style={{ width: '120px' }}>{t('create.correctAnswer')}</label>
-                    <input 
-                      type="text" 
-                      value={q.correct} 
-                      onChange={(e) => updateQuestion(idx, 'correct', e.target.value)} 
-                      className="flex-grow"
-                    />
+                    <input type="text" value={q.correct} onChange={(e) => updateQuestion(idx, 'correct', e.target.value)} className="flex-grow" />
                   </div>
                 )}
 
                 {q.type === 'percentage' && (
                   <div className="field-row pl-4 mt-2 bg-gray-100 p-2 border border-gray-300">
                     <label style={{ width: '60px' }}>{q.correct}%</label>
-                    <input 
-                      type="range" 
-                      min="0" max="100" 
-                      value={q.correct} 
-                      onChange={(e) => updateQuestion(idx, 'correct', parseInt(e.target.value))} 
-                      className="w-48"
-                    />
+                    <input type="range" min="0" max="100" value={q.correct} onChange={(e) => updateQuestion(idx, 'correct', parseInt(e.target.value))} className="w-48" />
                   </div>
                 )}
 
@@ -325,49 +326,43 @@ const Create = () => {
                   <div className="flex flex-col gap-2 bg-gray-100 p-2 border border-gray-300 mt-2">
                     <div className="flex gap-4 items-center mb-2">
                       <div className="field-row">
-                        <label style={{ width: 'auto', marginRight: '4px' }}>X %:</label>
+                        <label>X %:</label>
                         <input type="number" value={q.correct.x} onChange={e => updateZone(idx, 'x', e.target.value)} style={{ width: '60px' }} />
                       </div>
                       <div className="field-row">
-                        <label style={{ width: 'auto', marginRight: '4px' }}>Y %:</label>
+                        <label>Y %:</label>
                         <input type="number" value={q.correct.y} onChange={e => updateZone(idx, 'y', e.target.value)} style={{ width: '60px' }} />
                       </div>
                       <div className="field-row">
-                        <label style={{ width: 'auto', marginRight: '4px' }}>{t('create.radius')}</label>
+                        <label>{t('create.radius')}</label>
                         <input type="number" value={q.correct.radius} onChange={e => updateZone(idx, 'radius', e.target.value)} style={{ width: '60px' }} />
                       </div>
                     </div>
                     {q.imageUrl && (
-                      <div className="border border-gray-500 bg-white p-1 text-center">
-                        <p className="text-xs text-gray-600 mb-1">{t('create.clickImage')}</p>
-                        <div style={{ position: 'relative', display: 'inline-block' }}>
-                          <img 
-                            src={q.imageUrl} 
-                            alt="Zone preview" 
-                            style={{ maxWidth: '100%', maxHeight: '400px', cursor: 'crosshair', display: 'block', border: '1px solid black' }}
-                            onClick={(e) => {
-                              const rect = e.target.getBoundingClientRect();
-                              const x = ((e.clientX - rect.left) / rect.width) * 100;
-                              const y = ((e.clientY - rect.top) / rect.height) * 100;
-                              updateZone(idx, 'x', x.toFixed(2));
-                              updateZone(idx, 'y', y.toFixed(2));
-                            }}
-                          />
-                          {q.correct.x !== undefined && q.correct.y !== undefined && (
-                            <div style={{
-                              position: 'absolute',
-                              left: `${q.correct.x}%`,
-                              top: `${q.correct.y}%`,
-                              width: `${(q.correct.radius || 10) * 2}%`,
-                              height: `${(q.correct.radius || 10) * 2}%`,
-                              border: '2px dashed red',
-                              borderRadius: '50%',
-                              transform: 'translate(-50%, -50%)',
-                              pointerEvents: 'none',
-                              boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
-                            }} />
-                          )}
-                        </div>
+                      <div className="border border-gray-500 bg-white p-1 text-center relative">
+                        <img 
+                          src={q.imageUrl} 
+                          alt="Zone preview" 
+                          style={{ maxWidth: '100%', maxHeight: '400px', cursor: 'crosshair', display: 'block', margin: '0 auto' }}
+                          onClick={(e) => {
+                            const rect = e.target.getBoundingClientRect();
+                            const x = ((e.clientX - rect.left) / rect.width) * 100;
+                            const y = ((e.clientY - rect.top) / rect.height) * 100;
+                            updateZone(idx, 'x', x.toFixed(2));
+                            updateZone(idx, 'y', y.toFixed(2));
+                          }}
+                        />
+                        <div style={{
+                          position: 'absolute',
+                          left: `${q.correct.x}%`,
+                          top: `${q.correct.y}%`,
+                          width: `${(q.correct.radius || 10) * 2}%`,
+                          height: `${(q.correct.radius || 10) * 2}%`,
+                          border: '2px dashed red',
+                          borderRadius: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          pointerEvents: 'none'
+                        }} />
                       </div>
                     )}
                   </div>
@@ -379,21 +374,14 @@ const Create = () => {
           <div className="border-t-2 border-gray-400 pt-3 mt-4 flex-shrink-0 flex justify-between items-center bg-[#ece9d8] sticky bottom-0 z-10 w-full px-2 pb-2">
             <span className="text-sm font-bold text-gray-800">{t('create.totalQuestions', { count: questions.length })}</span>
             <div className="flex gap-2">
-              <button 
-                onClick={importWayground}
-                className="py-1 px-4 font-bold flex items-center shadow-md border-2 border-white border-b-gray-600 border-r-gray-600 active:border-t-gray-600 active:border-l-gray-600 active:border-b-white active:border-r-white bg-gray-200 cursor-pointer"
-              >
+              <button onClick={importWayground} className="py-1 px-4 font-bold flex items-center shadow-md border-2 border-white border-b-gray-600 border-r-gray-600 active:border-t-gray-600 active:border-l-gray-600 active:border-b-white active:border-r-white bg-gray-200 cursor-pointer">
                 {t('create.wayground', 'Wayground')}
               </button>
               <label className="py-1 px-4 font-bold flex items-center shadow-md border-2 border-white border-b-gray-600 border-r-gray-600 active:border-t-gray-600 active:border-l-gray-600 active:border-b-white active:border-r-white bg-gray-200 cursor-pointer">
                 {t('create.importJson')}
                 <input type="file" accept=".json" onChange={importJSON} style={{ display: 'none' }} />
               </label>
-              <button 
-                onClick={exportJSON}
-                disabled={questions.length === 0}
-                className="py-1 px-4 font-bold flex items-center bg-gray-200 disabled:opacity-50"
-              >
+              <button onClick={exportJSON} disabled={questions.length === 0} className="py-1 px-4 font-bold flex items-center bg-gray-200 disabled:opacity-50">
                 <Download size={16} className="mr-2" /> {t('create.exportJson')}
               </button>
             </div>

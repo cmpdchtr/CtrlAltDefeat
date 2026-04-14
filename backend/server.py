@@ -198,17 +198,30 @@ async def reveal_answer(code):
     room['state'] = 'reveal'
     q = room['questions'][room['current_q']]
     q_type = q.get('type', 'multiple_choice')
+
     for sid, p in room['players'].items():
         if p['status'] == 'alive':
             player_choice = p.get('choice')
             is_correct = False
-            if q_type in ['multiple_choice', 'image_options']:
-                try:
-                    c_idx = int(q['correct'])
-                    is_correct = (player_choice == c_idx)
-                except: pass
+
+            if q_type == 'multiple_choice' or q_type == 'image_options':
+                correct_val = q['correct']
+                # Support both single index and array of indices
+                correct_arr = correct_val if isinstance(correct_val, list) else [correct_val]
+                # Ensure player_choice is a list
+                p_choice_arr = player_choice if isinstance(player_choice, list) else ([player_choice] if player_choice is not None else [])
+
+                # Check if arrays match exactly (order doesn't strictly matter for set equality)
+                if len(correct_arr) == len(p_choice_arr) and set(map(int, correct_arr)) == set(map(int, p_choice_arr)):
+                    is_correct = True
+
             elif q_type == 'text':
-                is_correct = str(q['correct']).lower() == str(player_choice).lower()
+                if player_choice and isinstance(player_choice, str):
+                    correct_ans = q['correct']
+                    if isinstance(correct_ans, list):
+                        is_correct = any(str(a).lower() == player_choice.lower() for a in correct_ans)
+                    else:
+                        is_correct = (str(correct_ans).lower() == player_choice.lower())
             elif q_type == 'percentage':
                 try: is_correct = (abs(float(q['correct']) - float(player_choice)) <= 5.0)
                 except: pass
