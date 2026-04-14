@@ -148,7 +148,7 @@ function Player() {
               </div>
             </form>
             <div className="mt-6 pt-4 border-t border-gray-300 flex flex-col">
-              <button type="button" onClick={() => navigate('/host')} className="w-full flex items-center justify-center gap-2 py-2 mb-3">
+              <button type="button" onClick={() => navigate('/host')} className="w-full flex items-center justify-center gap-2 py-2" style={{ marginBottom: '10px' }}>
                 <Monitor size={16} /> Host a Game
               </button>
               <button type="button" onClick={() => navigate('/create')} className="w-full flex items-center justify-center gap-2 py-2">
