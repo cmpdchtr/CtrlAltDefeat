@@ -4,7 +4,7 @@ import asyncio
 import socketio
 import random
 import string
-import requests
+import httpx
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -28,19 +28,33 @@ async def root():
 
 @app.get("/api/proxy")
 async def proxy(url: str = Query(...)):
+    """
+    Proxy request to bypass CORS for Wayground/external quiz imports.
+    Using httpx for non-blocking async requests to prevent 502/Gateway errors.
+    """
     try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        
-        # Check if response is actually JSON
-        content_type = response.headers.get('Content-Type', '')
-        if 'application/json' in content_type:
-            return response.json()
-        else:
-            # If not JSON, return the raw text as a field to avoid JSON.parse error on frontend
-            return {"error": "Remote server did not return JSON", "raw": response.text[:1000]}
-    except requests.exceptions.HTTPError as e:
-        return {"error": f"HTTP Error: {e.response.status_code}", "status": e.response.status_code}
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+            response = await client.get(url)
+            
+            # Check if status code is successful
+            if response.status_code >= 400:
+                return {
+                    "error": f"Remote server returned {response.status_code}", 
+                    "status": response.status_code,
+                    "raw": response.text[:500]
+                }
+            
+            content_type = response.headers.get('Content-Type', '')
+            if 'application/json' in content_type:
+                try:
+                    return response.json()
+                except Exception:
+                    return {"error": "Failed to parse JSON from remote response", "raw": response.text[:500]}
+            else:
+                return {"error": "Remote server did not return JSON", "raw": response.text[:500]}
+                
+    except httpx.TimeoutException:
+        return {"error": "Request to remote server timed out"}
     except Exception as e:
         return {"error": str(e)}
 
