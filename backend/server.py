@@ -31,7 +31,16 @@ async def proxy(url: str = Query(...)):
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        return response.json()
+        
+        # Check if response is actually JSON
+        content_type = response.headers.get('Content-Type', '')
+        if 'application/json' in content_type:
+            return response.json()
+        else:
+            # If not JSON, return the raw text as a field to avoid JSON.parse error on frontend
+            return {"error": "Remote server did not return JSON", "raw": response.text[:1000]}
+    except requests.exceptions.HTTPError as e:
+        return {"error": f"HTTP Error: {e.response.status_code}", "status": e.response.status_code}
     except Exception as e:
         return {"error": str(e)}
 

@@ -93,11 +93,25 @@ const Create = () => {
       : window.location.origin;
 
     try {
-      const proxyUrl = `${backendUrl}/api/proxy?url=${encodeURIComponent(url)}`;
-      const response = await fetch(proxyUrl);
+      let proxyUrl = `${backendUrl}/api/proxy?url=${encodeURIComponent(url)}`;
+      let response;
+      try {
+        response = await fetch(proxyUrl);
+      } catch (e) {
+        // Fallback to public proxy if local one fails
+        console.warn("Local proxy failed, trying public fallback...");
+        proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        response = await fetch(proxyUrl);
+      }
+
+      if (!response.ok) throw new Error(`Server responded with ${response.status}`);
       const data = await response.json();
       
       if (data.error) {
+        console.error("Proxy error details:", data);
+        if (data.status === 403) {
+          throw new Error("Wayground blocked the request (403 Forbidden). Try a different quiz link.");
+        }
         throw new Error(data.error);
       }
 
