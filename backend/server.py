@@ -41,7 +41,11 @@ async def proxy(url: str = Query(...)):
         return {"error": "httpx library not installed on server. Please install it to use the proxy."}
         
     try:
-        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json"
+        }
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True, headers=headers) as client:
             response = await client.get(url)
             
             if response.status_code >= 400:

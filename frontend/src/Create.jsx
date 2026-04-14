@@ -80,12 +80,13 @@ const Create = () => {
     const rawUrl = prompt(t('create.waygroundPrompt', 'Вставте посилання на Wayground (API/JSON):'));
     if (!rawUrl) return;
     
-    // Normalize URL if it's an admin link to use the apis endpoint
+    // Advanced normalization to target public Quizizz API
     let url = rawUrl;
-    if (url.includes('wayground.com/admin/quiz/') && !url.endsWith('/apis')) {
-       url = url.split('?')[0];
-       if (!url.endsWith('/')) url += '/';
-       url += 'apis';
+    const quizIdMatch = rawUrl.match(/quiz\/([a-f0-9]{24})/i);
+    if (quizIdMatch && quizIdMatch[1]) {
+       // Convert any Wayground/Quizizz link to the public data API
+       url = `https://quizizz.com/api/main/quiz/${quizIdMatch[1]}`;
+       console.log("Normalized URL to public API:", url);
     }
 
     const backendUrl = import.meta.env.DEV 
@@ -120,54 +121,53 @@ const Create = () => {
       }
 
       const contentType = response.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) {
-        const textSnippet = (await response.text()).substring(0, 200);
-        console.error("Received non-JSON response:", textSnippet);
-        throw new Error(t('create.importErrorNonJson', 'Сервер повернув некоректний формат даних (не JSON). Можливо, доступ обмежено.'));
+      const isJson = contentType.includes("application/json");
+      
+      let data;
+      if (isJson) {
+        data = await response.json();
+      } else {
+        // Force fallback if we got HTML instead of JSON
+        console.warn("Proxy returned non-JSON, attempting fallback to corsproxy...");
+        const fallbackUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        const fbRes = await fetchWithTimeout(fallbackUrl, { timeout: 10000 });
+        if (!fbRes.ok) throw new Error("Fallback proxy also failed");
+        data = await fbRes.json();
       }
-
-      const data = await response.json();
       
       if (data.error) {
         console.error("Proxy reported error:", data);
         throw new Error(data.error);
       }
 
-      // Map Wayground format to CtrlAltDefeat format
-      // Wayground (Quizizz) structure: data.data.quiz.info.questions
+      // Map format to CtrlAltDefeat format
       let wayQuestions = [];
+      // Structure for public API: data.data.quiz.info.questions
       if (data.data?.quiz?.info?.questions) {
         wayQuestions = data.data.quiz.info.questions;
+      } else if (data.questions) {
+        wayQuestions = data.questions;
       } else if (Array.isArray(data)) {
         wayQuestions = data;
-      } else if (data.questions && Array.isArray(data.questions)) {
-        wayQuestions = data.questions;
       }
 
       const mapped = wayQuestions.map(q => {
-        // Basic extraction based on typical Quizizz/Wayground JSON
         const structure = q.structure || {};
-        const qText = structure.query?.text || "Question";
-        const qType = structure.kind || "multiple_choice";
-        const options = structure.options || [];
+        const qText = structure.query?.text || q.text || "Question";
+        const options = structure.options || q.options || [];
         
         let type = "multiple_choice";
         let correct = 0;
-        let opts = options.map(o => o.text || "");
+        let opts = options.map(o => (o.text || "").replace(/<[^>]*>?/gm, '').trim());
 
-        if (qType === 'MSQ' || qType === 'MCQ') {
-          type = "multiple_choice";
-          const correctIdx = options.findIndex(o => o.isCorrect === true || o.correct === true);
-          correct = correctIdx !== -1 ? correctIdx : 0;
-        } else if (qType === 'BLANK') {
-          type = "text";
-          correct = options[0]?.text || "";
-        }
+        // Find correct answer index
+        const correctIdx = options.findIndex(o => o.isCorrect === true || o.correct === true);
+        correct = correctIdx !== -1 ? correctIdx : 0;
 
         return {
           type,
-          question: qText.replace(/<[^>]*>?/gm, ''), // strip html
-          options: opts.length > 0 ? opts : ["", "", "", ""],
+          question: qText.replace(/<[^>]*>?/gm, '').trim(),
+          options: opts.length >= 4 ? opts.slice(0,4) : [...opts, "", "", "", ""].slice(0,4),
           correct
         };
       });
