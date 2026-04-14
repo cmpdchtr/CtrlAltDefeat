@@ -413,9 +413,6 @@ function Host() {
         <div className="system-tray flex items-center">
           <span className="mr-2">{t('host.server')}</span>
           {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          <div className="ml-2 border-l border-gray-400 h-full pl-2">
-             <LanguageSwitcher inTaskbar={true} />
-          </div>
         </div>
       </div>
     </div>

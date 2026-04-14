@@ -102,7 +102,7 @@ function Player() {
     return (
       <div className="winner">
         {t('player.winner')}
-        <LanguageSwitcher />
+        <LanguageSwitcher position="bottom-right" />
       </div>
     );
   }
@@ -117,7 +117,7 @@ function Player() {
         <p>{t('player.techInfo')}</p>
         <p>*** STOP: 0x0000000A (IRQL_NOT_LESS_OR_EQUAL)</p>
         <p>*** ELIMINATED_FROM_GAME.SYS - Address 0xFFFFFFFF base at 0x00000000</p>
-        <LanguageSwitcher />
+        <LanguageSwitcher position="bottom-right" />
       </div>
     );
   }
@@ -125,7 +125,7 @@ function Player() {
   if (!joined) {
     return (
       <div className="h-screen w-screen overflow-hidden bg-blue-800 flex items-center justify-center p-2 box-border">
-        <LanguageSwitcher />
+        <LanguageSwitcher position="bottom-right" />
         <div className="window" style={{ width: '100%', maxWidth: '350px' }}>
           <div className="title-bar">
             <div className="title-bar-text">{t('player.logOnTitle')}</div>
@@ -175,7 +175,7 @@ function Player() {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-blue-800 p-2 font-tahoma flex flex-col box-border">
-      <LanguageSwitcher />
+      <LanguageSwitcher position="bottom-right" />
       <div className="window flex-grow flex flex-col">
         <div className="title-bar">
           <div className="title-bar-text">{t('player.connection', { code: room?.code, name })}</div>

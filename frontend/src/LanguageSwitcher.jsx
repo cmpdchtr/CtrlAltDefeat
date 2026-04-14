@@ -1,44 +1,21 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-const LanguageSwitcher = ({ inTaskbar = false }) => {
+const LanguageSwitcher = ({ position = 'top-right' }) => {
   const { i18n } = useTranslation();
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
   };
 
-  if (inTaskbar) {
-    return (
-      <div className="flex items-center px-1" title="Language" style={{ height: '100%' }}>
-        <select 
-          value={i18n.resolvedLanguage?.split('-')[0] || 'en'} 
-          onChange={(e) => changeLanguage(e.target.value)}
-          style={{ 
-            fontFamily: 'Tahoma, sans-serif',
-            fontSize: '11px',
-            padding: '0',
-            margin: '0',
-            border: 'none',
-            background: 'transparent',
-            outline: 'none',
-            cursor: 'pointer',
-            textTransform: 'uppercase',
-            color: 'black',
-            width: '40px'
-          }}
-        >
-          <option value="en">EN</option>
-          <option value="uk">UK</option>
-          <option value="ru">RU</option>
-        </select>
-      </div>
-    );
-  }
+  const containerStyle = {
+    position: 'fixed',
+    zIndex: 99999,
+    ...(position === 'top-right' ? { top: '10px', right: '10px' } : { bottom: '10px', right: '10px' })
+  };
 
-  // Floating variant for Player.jsx and mobile
   return (
-    <div style={{ position: 'fixed', top: '10px', right: '10px', zIndex: 99999 }}>
+    <div style={containerStyle}>
       <select 
         value={i18n.resolvedLanguage?.split('-')[0] || 'en'} 
         onChange={(e) => changeLanguage(e.target.value)}
