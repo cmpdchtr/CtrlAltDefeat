@@ -38,7 +38,7 @@ const LanguageSwitcher = ({ inTaskbar = false }) => {
 
   // Floating variant for Player.jsx and mobile
   return (
-    <div style={{ position: 'fixed', bottom: '10px', right: '10px', zIndex: 99999 }}>
+    <div style={{ position: 'fixed', top: '10px', right: '10px', zIndex: 99999 }}>
       <select 
         value={i18n.resolvedLanguage?.split('-')[0] || 'en'} 
         onChange={(e) => changeLanguage(e.target.value)}
