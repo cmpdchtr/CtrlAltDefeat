@@ -4,7 +4,8 @@ import asyncio
 import socketio
 import random
 import string
-from fastapi import FastAPI
+import requests
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
@@ -24,6 +25,15 @@ rooms = {}
 @app.get("/")
 async def root():
     return {"status": "CtrlAltDefeat Backend is Running! This port is meant for Socket.IO connections, not for browser pages. Please open the Frontend port instead."}
+
+@app.get("/api/proxy")
+async def proxy(url: str = Query(...)):
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        return {"error": str(e)}
 
 try:
     with open(os.path.join(os.path.dirname(__file__), "questions.json"), "r", encoding="utf-8") as f:

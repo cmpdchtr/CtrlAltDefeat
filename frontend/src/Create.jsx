@@ -77,16 +77,74 @@ const Create = () => {
   };
 
   const importWayground = async () => {
-    const url = prompt(t('create.waygroundPrompt', 'Вставте посилання на Wayground (API/JSON):'));
-    if (!url) return;
+    const rawUrl = prompt(t('create.waygroundPrompt', 'Вставте посилання на Wayground (API/JSON):'));
+    if (!rawUrl) return;
+    
+    // Normalize URL if it's an admin link to use the apis endpoint
+    let url = rawUrl;
+    if (url.includes('wayground.com/admin/quiz/') && !url.endsWith('/apis')) {
+       url = url.split('?')[0];
+       if (!url.endsWith('/')) url += '/';
+       url += 'apis';
+    }
+
+    const backendUrl = import.meta.env.DEV 
+      ? `${window.location.protocol}//${window.location.hostname}:8000` 
+      : window.location.origin;
+
     try {
-      const response = await fetch(url);
-      const imported = await response.json();
-      if (Array.isArray(imported)) {
-        setQuestions(imported);
+      const proxyUrl = `${backendUrl}/api/proxy?url=${encodeURIComponent(url)}`;
+      const response = await fetch(proxyUrl);
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Map Wayground format to CtrlAltDefeat format
+      // Wayground (Quizizz) structure: data.data.quiz.info.questions
+      let wayQuestions = [];
+      if (data.data?.quiz?.info?.questions) {
+        wayQuestions = data.data.quiz.info.questions;
+      } else if (Array.isArray(data)) {
+        wayQuestions = data;
+      } else if (data.questions && Array.isArray(data.questions)) {
+        wayQuestions = data.questions;
+      }
+
+      const mapped = wayQuestions.map(q => {
+        // Basic extraction based on typical Quizizz/Wayground JSON
+        const structure = q.structure || {};
+        const qText = structure.query?.text || "Question";
+        const qType = structure.kind || "multiple_choice";
+        const options = structure.options || [];
+        
+        let type = "multiple_choice";
+        let correct = 0;
+        let opts = options.map(o => o.text || "");
+
+        if (qType === 'MSQ' || qType === 'MCQ') {
+          type = "multiple_choice";
+          const correctIdx = options.findIndex(o => o.isCorrect === true || o.correct === true);
+          correct = correctIdx !== -1 ? correctIdx : 0;
+        } else if (qType === 'BLANK') {
+          type = "text";
+          correct = options[0]?.text || "";
+        }
+
+        return {
+          type,
+          question: qText.replace(/<[^>]*>?/gm, ''), // strip html
+          options: opts.length > 0 ? opts : ["", "", "", ""],
+          correct
+        };
+      });
+
+      if (mapped.length > 0) {
+        setQuestions(prev => [...prev, ...mapped]);
         alert(t('create.importSuccess', 'Успішно імпортовано!'));
       } else {
-        alert(t('create.importError', 'Невірний формат даних. Очікується масив.'));
+        alert(t('create.importError', 'Не вдалося знайти питання у файлі.'));
       }
     } catch (err) {
       alert(t('create.importFailed', 'Не вдалося завантажити дані за посиланням. Перевірте консоль для деталей.'));
