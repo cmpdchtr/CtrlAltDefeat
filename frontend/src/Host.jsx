@@ -93,29 +93,33 @@ function Host() {
         )}
 
         {['question', 'reveal', 'end'].includes(room.state) && (
-          <div className="window absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ width: '85%', height: '85%', maxWidth: '900px' }}>
-            <div className="title-bar"><div className="title-bar-text">{t('host.quizExe')}</div></div>
-            <div className="window-body bg-white h-full flex flex-col p-6 overflow-y-auto">
+          <div className="window absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ width: '85%', height: '85%', maxWidth: '900px', display: 'flex', flexDirection: 'column' }}>
+            <div className="title-bar" style={{ flexShrink: 0 }}><div className="title-bar-text">{t('host.quizExe')}</div></div>
+            <div className="window-body bg-white flex-grow flex flex-col p-6 overflow-hidden">
               {room.state === 'end' ? (
-                <div className="text-center flex flex-col items-center">
+                <div className="text-center flex flex-col items-center h-full">
                   <h1 className="text-3xl font-bold mt-4 text-blue-800">{t('host.gameOverTitle')}</h1>
-                  <table className="w-full mt-4 border-2">
-                    <thead className="bg-[#ece9d8]"><tr><th className="p-2">{t('host.player')}</th><th className="p-2">{t('host.score')}</th><th className="p-2">{t('host.status')}</th></tr></thead>
-                    <tbody>{Object.values(room.players).sort((a,b)=>b.score-a.score).map((p, i) => (
-                      <tr key={i} className="border-b"><td className="p-2 flex items-center">{p.avatar !== null && <div className="w-6 h-6 mr-2"><RetroAvatar id={p.avatar} /></div>}{p.name}</td><td className="p-2 text-center">{p.score}</td><td className={clsx("p-2 text-center font-bold", p.status==='alive'?'text-green-600':'text-red-600')}>{p.status.toUpperCase()}</td></tr>
-                    ))}</tbody>
-                  </table>
-                  <button onClick={() => window.location.reload()} className="mt-6 font-bold px-6 py-2">{t('host.restartServer')}</button>
+                  <div className="flex-grow w-full overflow-y-auto mt-4 border-2">
+                    <table className="w-full">
+                      <thead className="bg-[#ece9d8] sticky top-0"><tr><th className="p-2">{t('host.player')}</th><th className="p-2">{t('host.score')}</th><th className="p-2">{t('host.status')}</th></tr></thead>
+                      <tbody>{Object.values(room.players).sort((a,b)=>b.score-a.score).map((p, i) => (
+                        <tr key={i} className="border-b"><td className="p-2 flex items-center">{p.avatar !== null && <div className="w-6 h-6 mr-2"><RetroAvatar id={p.avatar} /></div>}{p.name}</td><td className="p-2 text-center">{p.score}</td><td className={clsx("p-2 text-center font-bold", p.status==='alive'?'text-green-600':'text-red-600')}>{p.status.toUpperCase()}</td></tr>
+                      ))}</tbody>
+                    </table>
+                  </div>
+                  <button onClick={() => window.location.reload()} className="mt-6 font-bold px-6 py-2 flex-shrink-0">{t('host.restartServer')}</button>
                 </div>
               ) : (
                 <>
-                  <fieldset><legend>{t('host.timer')}</legend><div className="flex items-center w-full mt-1"><span className="w-8 font-bold">{timer}s</span><div className="flex-grow flex border h-[22px] p-[2px] bg-gray-100">
-                    {Array.from({ length: 30 }).map((_, i) => (<div key={i} className={clsx("flex-1 h-full mx-[1px]", (i/30 < timer/(room.default_timer||15)) ? (timer<=5?"bg-red-600":"bg-green-600") : "bg-transparent")} />))}
-                  </div></div></fieldset>
-                  <h2 className="text-2xl font-bold my-6 text-center">{currentQ.question}</h2>
-                  <div className={clsx("grid gap-4 flex-grow", (currentQ.options?.length > 4) ? "grid-cols-1" : "grid-cols-2")}>
+                  <div className="flex-shrink-0">
+                    <fieldset><legend>{t('host.timer')}</legend><div className="flex items-center w-full mt-1"><span className="w-8 font-bold">{timer}s</span><div className="flex-grow flex border h-[22px] p-[2px] bg-gray-100">
+                      {Array.from({ length: 30 }).map((_, i) => (<div key={i} className={clsx("flex-1 h-full mx-[1px]", (i/30 < timer/(room.default_timer||15)) ? (timer<=5?"bg-red-600":"bg-green-600") : "bg-transparent")} />))}
+                    </div></div></fieldset>
+                    <h2 className="text-2xl font-bold my-6 text-center">{currentQ.question}</h2>
+                  </div>
+                  <div className={clsx("grid gap-4 flex-grow overflow-y-auto p-2", (currentQ.options?.length > 4) ? "grid-cols-1" : "grid-cols-2")} style={{ alignContent: 'start' }}>
                     {['multiple_choice', 'image_options'].includes(qType) && currentQ.options.map((opt, i) => {
-                      let style = "border-2 p-4 font-bold flex items-center justify-center ";
+                      let style = "border-2 p-4 font-bold flex items-center justify-center min-h-[60px] ";
                       const isCorrect = Array.isArray(currentQ.correct) ? currentQ.correct.includes(i) : currentQ.correct === i;
                       if (room.state === 'reveal') style += isCorrect ? "bg-green-500 text-white" : "bg-red-100 opacity-50";
                       return (<div key={i} className={style}>{String.fromCharCode(65+i)}: {qType==='image_options'?<img src={opt} className="max-h-20 ml-2" alt=""/>:opt}</div>);
