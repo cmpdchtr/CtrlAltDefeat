@@ -142,13 +142,13 @@ function Player() {
                 <label htmlFor="name" style={{width: '80px'}}>User name:</label>
                 <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required maxLength={15} className="flex-grow"/>
               </div>
-              <div className="flex justify-end mt-6">
-                <button type="submit" className="mr-3" style={{width: '80px'}}>OK</button>
+              <div className="flex justify-end mt-6 gap-4">
+                <button type="submit" style={{width: '80px'}}>OK</button>
                 <button type="button" onClick={() => {setCode(''); setName('');}} style={{width: '80px'}}>Cancel</button>
               </div>
             </form>
-            <div className="mt-5 pt-5 border-t border-gray-300 flex flex-col">
-              <button type="button" onClick={() => navigate('/host')} className="w-full flex items-center justify-center gap-2 py-2 mb-3">
+            <div className="mt-6 pt-4 border-t border-gray-300 flex flex-col gap-4">
+              <button type="button" onClick={() => navigate('/host')} className="w-full flex items-center justify-center gap-2 py-2">
                 <Monitor size={16} /> Host a Game
               </button>
               <button type="button" onClick={() => navigate('/create')} className="w-full flex items-center justify-center gap-2 py-2">
