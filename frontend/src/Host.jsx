@@ -6,6 +6,8 @@ import { Monitor, HelpCircle, Users } from 'lucide-react';
 import { RetroAvatar } from './RetroAvatar';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 // Use Vite's environment flags to dynamically switch URLs
 const socketUrl = import.meta.env.DEV 
@@ -15,6 +17,7 @@ const socketUrl = import.meta.env.DEV
 const socket = io(socketUrl);
 
 function Host() {
+  const { t } = useTranslation();
   const [room, setRoom] = useState(null);
   const [timer, setTimer] = useState(0);
 
@@ -63,7 +66,7 @@ function Host() {
             const parsed = JSON.parse(e.target.result);
             emitStart(parsed);
           } catch (err) {
-            alert("Помилка читання JSON файлу. Сервер запустить стандартні питання.");
+            alert("Error reading JSON. Server will use default questions.");
             emitStart(null);
           }
         };
@@ -77,9 +80,10 @@ function Host() {
   if (isMobile) {
     return (
       <div className="w-screen h-screen absolute top-0 left-0 font-tahoma flex items-center justify-center bg-blue-800 z-[9999]">
+        <LanguageSwitcher />
         <div className="window shadow-2xl" style={{ width: '320px' }}>
           <div className="title-bar">
-            <div className="title-bar-text">Error</div>
+            <div className="title-bar-text">{t('host.errorTitle')}</div>
             <div className="title-bar-controls">
               <button aria-label="Close"></button>
             </div>
@@ -87,10 +91,10 @@ function Host() {
           <div className="window-body">
             <div className="flex items-center mb-4 mt-2">
               <img src="https://win98icons.alexmeub.com/icons/png/msg_error-0.png" alt="error" className="mr-4 w-8 h-8" />
-              <p>Cannot create a room from a mobile device. Please join as a player or open this page on a PC.</p>
+              <p>{t('host.errorMobile')}</p>
             </div>
             <div className="flex justify-center mt-4 mb-2">
-              <button onClick={() => window.location.href = '/'} style={{ width: '80px' }}>OK</button>
+              <button onClick={() => window.location.href = '/'} style={{ width: '80px' }}>{t('player.ok')}</button>
             </div>
           </div>
         </div>
@@ -98,19 +102,20 @@ function Host() {
     );
   }
 
-  if (!room) return <div className="text-white p-5">Loading Windows XP...</div>;
+  if (!room) return <div className="text-white p-5">{t('host.loadingXP')}</div>;
 
-  // Automatically construct the correct URL based on the current origin (handles both Docker and dev server cases)
+  // Automatically construct the correct URL based on the current origin
   const joinUrl = room ? `${window.location.origin}/?code=${room.code}` : window.location.origin;
 
   return (
     <div className="w-full h-full relative font-tahoma text-black">
+      <LanguageSwitcher />
       <div className="desktop">
         
         {room.state === 'lobby' && (
           <div className="window absolute left-[calc(50%-440px)] top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '400px' }}>
             <div className="title-bar">
-              <div className="title-bar-text">Room Code.exe</div>
+              <div className="title-bar-text">{t('host.roomCodeExe')}</div>
               <div className="title-bar-controls">
                 <button aria-label="Minimize"></button>
                 <button aria-label="Maximize"></button>
@@ -134,7 +139,7 @@ function Host() {
                 </div>
               </div>
 
-              <p className="font-bold text-black font-tahoma text-xl mb-2" style={{ textShadow: '1px 1px 0px rgba(255,255,255,0.8)' }}>Scan to Join</p>
+              <p className="font-bold text-black font-tahoma text-xl mb-2" style={{ textShadow: '1px 1px 0px rgba(255,255,255,0.8)' }}>{t('host.scanToJoin')}</p>
             </div>
           </div>
         )}
@@ -142,7 +147,7 @@ function Host() {
         {room.state === 'lobby' && (
           <div className="window absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '400px' }}>
             <div className="title-bar">
-              <div className="title-bar-text">Server Monitor.exe</div>
+              <div className="title-bar-text">{t('host.serverMonitorExe')}</div>
               <div className="title-bar-controls">
                 <button aria-label="Minimize"></button>
                 <button aria-label="Maximize"></button>
@@ -152,32 +157,32 @@ function Host() {
             <div className="window-body">
               <div className="mb-4">
                 <fieldset>
-                  <legend>Game Settings</legend>
+                  <legend>{t('host.gameSettings')}</legend>
                   <div className="field-row mb-2">
-                    <label htmlFor="timer-setting">Seconds per Question:</label>
+                    <label htmlFor="timer-setting">{t('host.secondsPerQ')}</label>
                     <input id="timer-setting" type="number" defaultValue={15} min={5} max={60} style={{ width: '60px' }} />
                   </div>
                   <div className="field-row mb-2">
-                    <label htmlFor="q-file">Custom JSON Questions:</label>
+                    <label htmlFor="q-file">{t('host.customJson')}</label>
                     <input id="q-file" type="file" accept=".json" />
                   </div>
                   <div className="field-row mb-2">
                     <input id="shuffle-q" type="checkbox" defaultChecked />
-                    <label htmlFor="shuffle-q">Shuffle Questions</label>
+                    <label htmlFor="shuffle-q">{t('host.shuffleQ')}</label>
                   </div>
                   <div className="field-row">
                     <input id="fast-mode" type="checkbox" />
-                    <label htmlFor="fast-mode">Fast Reveal Mode</label>
+                    <label htmlFor="fast-mode">{t('host.fastRevealMode')}</label>
                   </div>
                 </fieldset>
               </div>
 
               <div className="flex justify-between items-center mt-6 p-2 border-t border-gray-300">
                 <div className="flex items-center text-gray-600 space-x-2">
-                  <Monitor size={16} /> <span>Status: Ready</span>
+                  <Monitor size={16} /> <span>{t('host.statusReady')}</span>
                 </div>
                 <button onClick={startGame} disabled={Object.keys(room.players).length === 0} style={{ width: '120px', height: '30px' }} className="font-bold">
-                  Start Game
+                  {t('host.startGame')}
                 </button>
               </div>
             </div>
@@ -187,7 +192,7 @@ function Host() {
         {room.state === 'lobby' && (
           <div className="window absolute left-[calc(50%+430px)] top-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-xl" style={{ width: '340px', height: '450px' }}>
             <div className="title-bar">
-              <div className="title-bar-text">Connected Players.exe</div>
+              <div className="title-bar-text">{t('host.connectedPlayersExe')}</div>
               <div className="title-bar-controls">
                 <button aria-label="Minimize"></button>
                 <button aria-label="Maximize"></button>
@@ -198,8 +203,8 @@ function Host() {
               <div className="flex flex-col m-0 p-0 text-sm">
                 <div className="flex bg-gray-200 border-b border-gray-400 p-1 font-bold text-gray-700">
                   <div className="w-10"></div>
-                  <div className="flex-grow">Username</div>
-                  <div className="w-16 text-center">Action</div>
+                  <div className="flex-grow">{t('host.username')}</div>
+                  <div className="w-16 text-center">{t('host.action')}</div>
                 </div>
                 {Object.entries(room.players).map(([sid, p], i) => (
                   <div key={sid} className="flex items-center border-b border-gray-200 p-1 hover:bg-blue-100 transition-colors" style={{ height: '40px', overflow: 'hidden' }}>
@@ -219,13 +224,13 @@ function Host() {
                         className="py-0 px-2 text-xs h-6 bg-red-100 font-bold"
                         title={"Kick " + p.name}
                       >
-                        KICK
+                        {t('host.kick')}
                       </button>
                     </div>
                   </div>
                 ))}
                 {Object.keys(room.players).length === 0 && (
-                  <p className="p-4 text-gray-500 text-center mt-10">No players connected yet.</p>
+                  <p className="p-4 text-gray-500 text-center mt-10">{t('host.noPlayers')}</p>
                 )}
               </div>
             </div>
@@ -235,7 +240,7 @@ function Host() {
         {['question', 'reveal', 'end'].includes(room.state) && (
           <div className="window absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ width: '80%', height: '80%', maxWidth: '800px', zIndex: 100 }}>
             <div className="title-bar">
-              <div className="title-bar-text">Quiz.exe</div>
+              <div className="title-bar-text">{t('host.quizExe')}</div>
               <div className="title-bar-controls">
                 <button aria-label="Minimize"></button>
                 <button aria-label="Maximize"></button>
@@ -246,14 +251,14 @@ function Host() {
               
               {room.state === 'end' ? (
                 <div className="text-center h-full flex flex-col justify-start items-center overflow-hidden">
-                  <h1 className="text-3xl font-bold mt-4 mb-4 text-blue-800">GAME OVER</h1>
+                  <h1 className="text-3xl font-bold mt-4 mb-4 text-blue-800">{t('host.gameOverTitle')}</h1>
                   <div className="w-full max-w-[90%] overflow-y-auto border-2 border-gray-400 inset bg-white bg-opacity-90" style={{ maxHeight: '60vh' }}>
                     <table className="interactive w-full">
                       <thead className="bg-[#ece9d8] sticky top-0 border-b-2 border-gray-400 z-10">
                         <tr>
-                          <th className="p-2 text-left w-1/2">Player</th>
-                          <th className="p-2 text-center">Score</th>
-                          <th className="p-2 text-center">Status</th>
+                          <th className="p-2 text-left w-1/2">{t('host.player')}</th>
+                          <th className="p-2 text-center">{t('host.score')}</th>
+                          <th className="p-2 text-center">{t('host.status')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -274,13 +279,13 @@ function Host() {
                       </tbody>
                     </table>
                   </div>
-                  <button onClick={() => window.location.reload()} className="mt-6 font-bold py-2 px-6">Restart Server</button>
+                  <button onClick={() => window.location.reload()} className="mt-6 font-bold py-2 px-6">{t('host.restartServer')}</button>
                 </div>
               ) : (
                 <>
                   <div className="mb-4">
                     <fieldset>
-                      <legend>Timer</legend>
+                      <legend>{t('host.timer')}</legend>
                       <div className="flex items-center w-full mt-1">
                         <span className="w-8 font-bold text-sm tracking-widest">{timer}s</span>
                         <div className="flex-grow flex border border-gray-400 bg-[#f0f0f0] h-[22px] p-[2px] gap-[2px] rounded-[3px] shadow-inner" style={{boxShadow: 'inset 1px 1px 2px rgba(0,0,0,0.1)'}}>
@@ -328,7 +333,7 @@ function Host() {
                       <div className="col-span-2 flex flex-col items-center justify-center text-4xl">
                         {room.state === 'reveal' ? (
                            <div className="p-8 bg-green-200 border-4 border-green-600 rounded-xl text-green-900 shadow-lg">
-                             <span className="font-bold uppercase tracking-wider block mb-2 text-sm text-green-700">Correct Answer:</span>
+                             <span className="font-bold uppercase tracking-wider block mb-2 text-sm text-green-700">{t('host.correctAnswerIs')}</span>
                              {Array.isArray(room.questions[room.current_q].correct) ? room.questions[room.current_q].correct.join(' OR ') : room.questions[room.current_q].correct}
                            </div>
                         ) : (
@@ -346,7 +351,7 @@ function Host() {
                              <div className="absolute inset-0 bg-blue-500 opacity-20 animate-pulse w-1/2"></div>
                            </div>
                         )}
-                        <p className="mt-4 text-gray-600 font-bold tracking-wide uppercase text-sm">Percentage Question</p>
+                        <p className="mt-4 text-gray-600 font-bold tracking-wide uppercase text-sm">{t('host.percentageQuestion')}</p>
                       </div>
                     ) : room.questions[room.current_q]?.type === 'image_zone' ? (
                       <div className="col-span-2 flex justify-center items-center relative min-h-[300px]">
@@ -373,13 +378,13 @@ function Host() {
                       <HelpCircle className="mr-2 text-blue-600 flex-shrink-0" />
                       <p className="text-sm text-blue-800">
                         {(!room.questions[room.current_q].type || room.questions[room.current_q].type === 'multiple_choice' || room.questions[room.current_q].type === 'image_options') ? (
-                          <>The correct answer is <strong>{room.questions[room.current_q].type === 'image_options' ? 'Image ' + String.fromCharCode(65 + room.questions[room.current_q].correct) : room.questions[room.current_q].options[room.questions[room.current_q].correct]}</strong></>
+                          <>{t('host.correctAnswerOpt', { letter: String.fromCharCode(65 + room.questions[room.current_q].correct) })}</>
                         ) : room.questions[room.current_q].type === 'text' ? (
-                          <>The correct answer is <strong>{Array.isArray(room.questions[room.current_q].correct) ? room.questions[room.current_q].correct.join(' OR ') : room.questions[room.current_q].correct}</strong></>
+                          <>{t('host.correctAnswerIs')} <strong>{Array.isArray(room.questions[room.current_q].correct) ? room.questions[room.current_q].correct.join(' OR ') : room.questions[room.current_q].correct}</strong></>
                         ) : room.questions[room.current_q].type === 'percentage' ? (
-                          <>The exact percentage is <strong>{room.questions[room.current_q].correct}%</strong></>
+                          <>{t('host.exactPercentage')} <strong>{room.questions[room.current_q].correct}%</strong></>
                         ) : room.questions[room.current_q].type === 'image_zone' ? (
-                          <>The correct zone was highlighted on the image.</>
+                          <>{t('host.correctZone')}</>
                         ) : ''}
                       </p>
                     </div>
@@ -396,18 +401,21 @@ function Host() {
       <div className="taskbar">
         <button className="start-btn">
           <img src="https://win98icons.alexmeub.com/icons/png/windows_slanted-1.png" alt="windows" />
-          start
+          {t('host.start')}
         </button>
         <div className="flex-grow flex items-center px-2">
           {room.state !== 'lobby' && (
             <div className="px-3 py-1 bg-blue-700 bg-opacity-50 text-white rounded border border-blue-400 shadow-inner flex items-center text-xs ml-2 cursor-default">
-              <Monitor size={14} className="mr-2"/> Quiz.exe
+              <Monitor size={14} className="mr-2"/> {t('host.quizExe')}
             </div>
           )}
         </div>
-        <div className="system-tray">
-          <span className="mr-2">CtrlAltDefeat Server</span>
+        <div className="system-tray flex items-center">
+          <span className="mr-2">{t('host.server')}</span>
           {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          <div className="ml-2 border-l border-gray-400 h-full pl-2">
+             <LanguageSwitcher inTaskbar={true} />
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { PlusCircle, Trash2, Image as ImageIcon, Download, Settings } from 'lucide-react';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 const Create = () => {
+  const { t } = useTranslation();
   const [questions, setQuestions] = useState([]);
   const [currentType, setCurrentType] = useState('multiple_choice');
 
@@ -75,6 +78,7 @@ const Create = () => {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-blue-800 font-tahoma flex flex-col box-border relative">
+      <LanguageSwitcher />
       <div 
         className="window absolute shadow-xl flex flex-col" 
         style={{ 
@@ -88,7 +92,7 @@ const Create = () => {
         }}
       >
         <div className="title-bar flex-shrink-0">
-          <div className="title-bar-text">Quiz Constructor.exe</div>
+          <div className="title-bar-text">{t('create.quizConstructorExe')}</div>
           <div className="title-bar-controls">
             <button aria-label="Minimize"></button>
             <button aria-label="Maximize"></button>
@@ -100,46 +104,46 @@ const Create = () => {
 
           
           <div className="flex gap-2 items-center mb-4 p-2 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200">
-            <label className="font-bold whitespace-nowrap">Question Type:</label>
+            <label className="font-bold whitespace-nowrap">{t('create.questionType')}</label>
             <select 
               value={currentType} 
               onChange={(e) => setCurrentType(e.target.value)}
               className="flex-grow p-1 border-2 border-gray-500 border-r-white border-b-white bg-white"
             >
-              <option value="multiple_choice">Multiple Choice</option>
-              <option value="text">Text Answer</option>
-              <option value="image_zone">Image Zone Click</option>
-              <option value="image_options">Image Options</option>
-              <option value="percentage">Percentage Slider</option>
+              <option value="multiple_choice">{t('create.typeMultiple')}</option>
+              <option value="text">{t('create.typeText')}</option>
+              <option value="image_zone">{t('create.typeImageZone')}</option>
+              <option value="image_options">{t('create.typeImageOptions')}</option>
+              <option value="percentage">{t('create.typePercentage')}</option>
             </select>
             <button onClick={addQuestion} className="px-4 py-1 flex items-center font-bold">
-              <PlusCircle size={14} className="mr-1" /> Add
+              <PlusCircle size={14} className="mr-1" /> {t('create.add')}
             </button>
           </div>
 
           <div className="flex-grow flex flex-col gap-4 mb-4">
             {questions.length === 0 && (
               <div className="flex items-center justify-center h-full text-gray-500 italic">
-                No questions added yet. Press 'Add' to start.
+                {t('create.noQuestions')}
               </div>
             )}
 
             {questions.map((q, idx) => (
               <fieldset key={idx} className="p-3 border border-gray-400 bg-white shadow-sm relative">
                 <legend className="px-2 font-bold text-blue-800 bg-white border border-gray-300">
-                  Question {idx + 1} ({q.type})
+                  {t('create.questionN', { num: idx + 1 })} ({t(`create.type${q.type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')}`) || q.type})
                 </legend>
                 
                 <button 
                   onClick={() => removeQuestion(idx)} 
                   className="absolute top-0 right-2 w-6 h-6 p-0 flex items-center justify-center !text-red-600 font-bold"
-                  title="Remove Question"
+                  title={t('create.removeQuestion')}
                 >
                   <Trash2 size={14} />
                 </button>
 
                 <div className="field-row mb-3">
-                  <label style={{ width: '80px' }}>Text:</label>
+                  <label style={{ width: '80px' }}>{t('create.text')}</label>
                   <input 
                     type="text" 
                     value={q.question} 
@@ -150,7 +154,7 @@ const Create = () => {
 
                 {(q.type === 'image_zone') && (
                   <div className="field-row mb-3">
-                    <label style={{ width: '80px' }}>Image URL:</label>
+                    <label style={{ width: '80px' }}>{t('create.imageUrl')}</label>
                     <input 
                       type="text" 
                       value={q.imageUrl || ''} 
@@ -174,7 +178,7 @@ const Create = () => {
                         <label htmlFor={`q-${idx}-opt-${oIdx}`} className="ml-1 mr-2">{String.fromCharCode(65 + oIdx)}:</label>
                         <input 
                           type="text" 
-                          placeholder={q.type === 'image_options' ? 'Image URL' : `Option ${String.fromCharCode(65 + oIdx)}`} 
+                          placeholder={q.type === 'image_options' ? 'Image URL' : t('create.option', { letter: String.fromCharCode(65 + oIdx) })} 
                           value={opt} 
                           onChange={(e) => updateOption(idx, oIdx, e.target.value)} 
                           className="flex-grow"
@@ -186,7 +190,7 @@ const Create = () => {
 
                 {q.type === 'text' && (
                   <div className="field-row pl-4 mt-2">
-                    <label style={{ width: '120px' }}>Correct Answer:</label>
+                    <label style={{ width: '120px' }}>{t('create.correctAnswer')}</label>
                     <input 
                       type="text" 
                       value={q.correct} 
@@ -221,13 +225,13 @@ const Create = () => {
                         <input type="number" value={q.correct.y} onChange={e => updateZone(idx, 'y', e.target.value)} style={{ width: '60px' }} />
                       </div>
                       <div className="field-row">
-                        <label style={{ width: 'auto', marginRight: '4px' }}>Radius (%):</label>
+                        <label style={{ width: 'auto', marginRight: '4px' }}>{t('create.radius')}</label>
                         <input type="number" value={q.correct.radius} onChange={e => updateZone(idx, 'radius', e.target.value)} style={{ width: '60px' }} />
                       </div>
                     </div>
                     {q.imageUrl && (
                       <div className="border border-gray-500 bg-white p-1 text-center">
-                        <p className="text-xs text-gray-600 mb-1">Click on the image to set the center coordinates automatically.</p>
+                        <p className="text-xs text-gray-600 mb-1">{t('create.clickImage')}</p>
                         <div style={{ position: 'relative', display: 'inline-block' }}>
                           <img 
                             src={q.imageUrl} 
@@ -265,10 +269,10 @@ const Create = () => {
           </div>
 
           <div className="border-t-2 border-gray-400 pt-3 mt-4 flex-shrink-0 flex justify-between items-center bg-[#ece9d8] sticky bottom-0 z-10 w-full px-2 pb-2">
-            <span className="text-sm font-bold text-gray-800">Total: {questions.length} questions</span>
+            <span className="text-sm font-bold text-gray-800">{t('create.totalQuestions', { count: questions.length })}</span>
             <div className="flex gap-2">
               <label className="py-1 px-4 font-bold flex items-center shadow-md border-2 border-white border-b-gray-600 border-r-gray-600 active:border-t-gray-600 active:border-l-gray-600 active:border-b-white active:border-r-white bg-gray-200 cursor-pointer">
-                Import JSON
+                {t('create.importJson')}
                 <input type="file" accept=".json" onChange={importJSON} style={{ display: 'none' }} />
               </label>
               <button 
@@ -276,7 +280,7 @@ const Create = () => {
                 disabled={questions.length === 0}
                 className="py-1 px-4 font-bold flex items-center bg-gray-200 disabled:opacity-50"
               >
-                <Download size={16} className="mr-2" /> Export JSON
+                <Download size={16} className="mr-2" /> {t('create.exportJson')}
               </button>
             </div>
           </div>
@@ -286,15 +290,18 @@ const Create = () => {
       <div className="taskbar mt-auto flex-shrink-0 z-20 w-full fixed bottom-0 left-0">
         <button className="start-btn">
           <img src="https://win98icons.alexmeub.com/icons/png/windows_slanted-1.png" alt="start" />
-          start
+          {t('host.start')}
         </button>
         <div className="flex-grow flex items-center px-2">
           <div className="px-3 py-1 bg-blue-700 bg-opacity-50 text-white rounded border border-blue-400 shadow-inner flex items-center text-xs cursor-default">
-            Quiz Constructor.exe
+            {t('create.quizConstructorExe')}
           </div>
         </div>
-        <div className="system-tray">
+        <div className="system-tray flex items-center">
           <span>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          <div className="ml-2 border-l border-gray-400 h-full pl-2">
+             <LanguageSwitcher inTaskbar={true} />
+          </div>
         </div>
       </div>
     </div>

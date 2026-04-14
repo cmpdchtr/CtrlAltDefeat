@@ -4,6 +4,8 @@ import { io } from 'socket.io-client';
 import clsx from 'clsx';
 import { LogIn, HelpCircle, Monitor, PlusCircle } from 'lucide-react';
 import { RetroAvatar } from './RetroAvatar';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 // Use Vite's environment flags to dynamically switch URLs
 const socketUrl = import.meta.env.DEV 
@@ -14,6 +16,7 @@ const socket = io(socketUrl);
 
 function Player() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [joined, setJoined] = useState(false);
   const [room, setRoom] = useState(null);
   const [code, setCode] = useState(() => {
@@ -98,7 +101,8 @@ function Player() {
   if (status === 'winner') {
     return (
       <div className="winner">
-        WINNER!
+        {t('player.winner')}
+        <LanguageSwitcher />
       </div>
     );
   }
@@ -106,13 +110,14 @@ function Player() {
   if (status === 'dead') {
     return (
       <div className="bsod" onClick={() => window.location.reload()}>
-        <h1>A fatal error has occurred.</h1>
-        <p>You have answered incorrectly or run out of time.</p>
-        <p>Press anywhere to restart your computer and return to the login screen.</p>
+        <h1>{t('player.fatalError')}</h1>
+        <p>{t('player.fatalErrorDesc1')}</p>
+        <p>{t('player.fatalErrorDesc2')}</p>
         <br/>
-        <p>Technical information:</p>
+        <p>{t('player.techInfo')}</p>
         <p>*** STOP: 0x0000000A (IRQL_NOT_LESS_OR_EQUAL)</p>
         <p>*** ELIMINATED_FROM_GAME.SYS - Address 0xFFFFFFFF base at 0x00000000</p>
+        <LanguageSwitcher />
       </div>
     );
   }
@@ -120,9 +125,10 @@ function Player() {
   if (!joined) {
     return (
       <div className="h-screen w-screen overflow-hidden bg-blue-800 flex items-center justify-center p-2 box-border">
+        <LanguageSwitcher />
         <div className="window" style={{ width: '100%', maxWidth: '350px' }}>
           <div className="title-bar">
-            <div className="title-bar-text">Log On to CtrlAltDefeat</div>
+            <div className="title-bar-text">{t('player.logOnTitle')}</div>
             <div className="title-bar-controls">
               <button aria-label="Close"></button>
             </div>
@@ -130,29 +136,29 @@ function Player() {
           <div className="window-body m-0 p-2">
             <div className="flex items-center mb-2">
               <LogIn size={32} className="mr-3 text-blue-600" />
-              <p>Type a room code and username to log on to the game.</p>
+              <p>{t('player.logOnDesc')}</p>
             </div>
             {error && <p className="text-red-600 mb-2 font-bold">{error}</p>}
             <form onSubmit={joinRoom}>
               <div className="field-row">
-                <label htmlFor="code" style={{width: '80px'}}>Room Code:</label>
+                <label htmlFor="code" style={{width: '80px'}}>{t('player.roomCode')}</label>
                 <input id="code" type="text" value={code} onChange={e => setCode(e.target.value.toUpperCase())} maxLength={4} required className="uppercase flex-grow"/>
               </div>
               <div className="field-row mt-2">
-                <label htmlFor="name" style={{width: '80px'}}>User name:</label>
+                <label htmlFor="name" style={{width: '80px'}}>{t('player.userName')}</label>
                 <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required maxLength={15} className="flex-grow"/>
               </div>
               <div className="flex justify-end" style={{ marginTop: '16px' }}>
-                <button type="submit" style={{width: '80px', marginRight: '8px'}}>OK</button>
-                <button type="button" onClick={() => {setCode(''); setName('');}} style={{width: '80px'}}>Cancel</button>
+                <button type="submit" style={{width: '80px', marginRight: '8px'}}>{t('player.ok')}</button>
+                <button type="button" onClick={() => {setCode(''); setName('');}} style={{width: '80px'}}>{t('player.cancel')}</button>
               </div>
             </form>
             <div className="pt-4 border-t border-gray-300 flex flex-col" style={{ marginTop: '12px' }}>
               <button type="button" onClick={() => window.open('/host', '_blank')} className="w-full flex items-center justify-center gap-2 py-2" style={{ marginBottom: '10px' }}>
-                <Monitor size={16} /> Host a Game
+                <Monitor size={16} /> {t('player.hostGame')}
               </button>
               <button type="button" onClick={() => window.open('/create', '_blank')} className="w-full flex items-center justify-center gap-2 py-2">
-                <PlusCircle size={16} /> Create a Room
+                <PlusCircle size={16} /> {t('player.createRoom')}
               </button>
             </div>
           </div>
@@ -161,7 +167,7 @@ function Player() {
     );
   }
 
-  if (!room) return <div className="min-h-screen bg-blue-800 flex items-center justify-center p-2 text-white">Loading...</div>;
+  if (!room) return <div className="min-h-screen bg-blue-800 flex items-center justify-center p-2 text-white">{t('player.loading')}</div>;
   const myPlayer = room?.players[socket.id];
   const choice = myPlayer?.choice;
   const currentQuestion = room?.questions?.[room?.current_q];
@@ -169,9 +175,10 @@ function Player() {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-blue-800 p-2 font-tahoma flex flex-col box-border">
+      <LanguageSwitcher />
       <div className="window flex-grow flex flex-col">
         <div className="title-bar">
-          <div className="title-bar-text">Connection: {room?.code} - {name}</div>
+          <div className="title-bar-text">{t('player.connection', { code: room?.code, name })}</div>
         </div>
         <div className="window-body m-0 p-2 flex-grow flex flex-col items-center justify-center p-2 bg-white relative">
           
@@ -181,7 +188,7 @@ function Player() {
                 // Avatar Selection Window
                 <div className="window w-full bg-[#ece9d8]">
                   <div className="title-bar">
-                    <div className="title-bar-text">Choose an Avatar</div>
+                    <div className="title-bar-text">{t('player.chooseAvatar')}</div>
                     <div className="title-bar-controls">
                       <button aria-label="Minimize"></button>
                       <button aria-label="Maximize"></button>
@@ -190,7 +197,7 @@ function Player() {
                   </div>
                   <div className="window-body p-4 bg-[#ece9d8]">
                     <fieldset className="p-2 border border-gray-400 bg-[#ece9d8]">
-                      <legend className="px-1 text-sm font-tahoma">Click an avatar to represent you:</legend>
+                      <legend className="px-1 text-sm font-tahoma">{t('player.clickAvatar')}</legend>
                       <div className="flex flex-wrap justify-center gap-2 mt-2 max-w-[260px] mx-auto">
                         {avatars.map((a, i) => (
                            <button 
@@ -211,8 +218,8 @@ function Player() {
                   <div className="mb-4 mx-auto w-24 h-24 p-2 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200 flex items-center justify-center">
                     <RetroAvatar id={avatar} />
                   </div>
-                  <h2 className="text-xl font-bold mb-2 font-tahoma">Connected!</h2>
-                  <p className="font-tahoma">Waiting for the host to start the game.</p>
+                  <h2 className="text-xl font-bold mb-2 font-tahoma">{t('player.connected')}</h2>
+                  <p className="font-tahoma">{t('player.waitingHost')}</p>
                 </div>
               )}
             </div>
@@ -220,7 +227,7 @@ function Player() {
 
           {room?.state === 'question' && (
             <div className="w-full h-full flex flex-col">
-              <h2 className="text-center font-bold text-xl mb-2 text-blue-900 border-b-2 border-blue-200 pb-2">Select your answer!</h2>
+              <h2 className="text-center font-bold text-xl mb-2 text-blue-900 border-b-2 border-blue-200 pb-2">{t('player.selectAnswer')}</h2>
               <div className="flex flex-col gap-2 flex-grow justify-center">
                 
                 {(qType === 'multiple_choice' || qType === 'image_options') && (
@@ -246,13 +253,13 @@ function Player() {
                       value={textAnswer} 
                       onChange={e => setTextAnswer(e.target.value)} 
                       className="border-2 border-gray-400 p-2 text-lg w-full"
-                      placeholder="Type your answer..."
+                      placeholder={t('player.typeAnswer')}
                     />
                     <button 
                       className={clsx("mobile-btn", choice !== undefined && choice !== null ? "active !bg-blue-600 !text-white" : "")}
                       onClick={() => submitAnswer(textAnswer)}
                     >
-                      Submit
+                      {t('player.submit')}
                     </button>
                   </div>
                 )}
@@ -270,7 +277,7 @@ function Player() {
                       className={clsx("mobile-btn", choice !== undefined && choice !== null ? "active !bg-blue-600 !text-white" : "")}
                       onClick={() => submitAnswer(percentAnswer)}
                     >
-                      Submit
+                      {t('player.submit')}
                     </button>
                   </div>
                 )}
@@ -300,13 +307,13 @@ function Player() {
                           }}></div>
                        )}
                     </div>
-                    <p className="text-center text-sm">Tap the image to select the correct zone.</p>
+                    <p className="text-center text-sm">{t('player.tapImage')}</p>
                   </div>
                 )}
 
               </div>
               {choice !== null && choice !== undefined && (
-                <p className="text-center mt-2 text-green-700 font-bold">Answer received! Waiting for others...</p>
+                <p className="text-center mt-2 text-green-700 font-bold">{t('player.answerReceived')}</p>
               )}
             </div>
           )}
@@ -314,15 +321,15 @@ function Player() {
           {room?.state === 'reveal' && (
             <div className="text-center">
               <HelpCircle size={48} className="mx-auto mb-2 text-blue-500" />
-              <h2 className="text-2xl font-bold mb-2">Time's Up!</h2>
-              <p>Look at the main screen for the correct answer.</p>
+              <h2 className="text-2xl font-bold mb-2">{t('player.timesUp')}</h2>
+              <p>{t('player.lookMainScreen')}</p>
             </div>
           )}
 
           {room?.state === 'end' && (
             <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Game Over</h2>
-              <p>Look at the main screen for the final results.</p>
+              <h2 className="text-2xl font-bold mb-2">{t('player.gameOver')}</h2>
+              <p>{t('player.lookMainScreenResults')}</p>
             </div>
           )}
 
