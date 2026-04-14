@@ -1,5 +1,5 @@
-aiohttp
-python-socketio
-uvicorn[standard]
 fastapi
-qrcode
+uvicorn
+python-socketio
+httpx
+requests
