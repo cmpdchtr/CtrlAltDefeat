@@ -90,7 +90,7 @@ const Create = () => {
 
     const backendUrl = import.meta.env.DEV 
       ? `${window.location.protocol}//${window.location.hostname}:8000` 
-      : window.location.origin;
+      : `${window.location.protocol}//${window.location.hostname}:8000`; // Always target 8000 for API in this setup
 
     try {
       let urlToFetch = `${backendUrl}/api/proxy?url=${encodeURIComponent(url)}`;
