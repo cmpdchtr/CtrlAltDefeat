@@ -147,7 +147,7 @@ function Player() {
                 <button type="button" onClick={() => {setCode(''); setName('');}} style={{width: '80px'}}>Cancel</button>
               </div>
             </form>
-            <div className="mt-6 pt-4 border-t border-gray-300 flex flex-col">
+            <div className="pt-4 border-t border-gray-300 flex flex-col" style={{ marginTop: '20px' }}>
               <button type="button" onClick={() => navigate('/host')} className="w-full flex items-center justify-center gap-2 py-2" style={{ marginBottom: '10px' }}>
                 <Monitor size={16} /> Host a Game
               </button>
