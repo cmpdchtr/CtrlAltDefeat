@@ -90,20 +90,29 @@ const Create = () => {
 
     const backendUrl = import.meta.env.DEV 
       ? `${window.location.protocol}//${window.location.hostname}:8000` 
-      : `${window.location.protocol}//${window.location.hostname}:8000`; // Always target 8000 for API in this setup
+      : window.location.origin;
 
     try {
       let urlToFetch = `${backendUrl}/api/proxy?url=${encodeURIComponent(url)}`;
       let response;
       
+      const fetchWithTimeout = async (resource, options = {}) => {
+        const { timeout = 5000 } = options;
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        const response = await fetch(resource, { ...options, signal: controller.signal });
+        clearTimeout(id);
+        return response;
+      };
+
       try {
         console.log("Attempting import via local proxy...");
-        response = await fetch(urlToFetch);
+        response = await fetchWithTimeout(urlToFetch, { timeout: 5000 });
         if (!response.ok) throw new Error(`Local proxy returned ${response.status}`);
       } catch (e) {
-        console.warn("Local proxy failed or returned error, trying public fallback (corsproxy.io)...", e.message);
+        console.warn("Local proxy failed or timed out, trying public fallback (corsproxy.io)...", e.message);
         urlToFetch = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-        response = await fetch(urlToFetch);
+        response = await fetchWithTimeout(urlToFetch, { timeout: 10000 });
       }
 
       if (!response.ok) {
