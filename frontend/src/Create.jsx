@@ -93,25 +93,34 @@ const Create = () => {
       : window.location.origin;
 
     try {
-      let proxyUrl = `${backendUrl}/api/proxy?url=${encodeURIComponent(url)}`;
+      let urlToFetch = `${backendUrl}/api/proxy?url=${encodeURIComponent(url)}`;
       let response;
+      
       try {
-        response = await fetch(proxyUrl);
+        console.log("Attempting import via local proxy...");
+        response = await fetch(urlToFetch);
+        if (!response.ok) throw new Error(`Local proxy returned ${response.status}`);
       } catch (e) {
-        // Fallback to public proxy if local one fails
-        console.warn("Local proxy failed, trying public fallback...");
-        proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-        response = await fetch(proxyUrl);
+        console.warn("Local proxy failed or returned error, trying public fallback (corsproxy.io)...", e.message);
+        urlToFetch = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        response = await fetch(urlToFetch);
       }
 
-      if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`All proxies failed. Last status: ${response.status}`);
+      }
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const textSnippet = (await response.text()).substring(0, 200);
+        console.error("Received non-JSON response:", textSnippet);
+        throw new Error(t('create.importErrorNonJson', 'Сервер повернув некоректний формат даних (не JSON). Можливо, доступ обмежено.'));
+      }
+
       const data = await response.json();
       
       if (data.error) {
-        console.error("Proxy error details:", data);
-        if (data.status === 403) {
-          throw new Error("Wayground blocked the request (403 Forbidden). Try a different quiz link.");
-        }
+        console.error("Proxy reported error:", data);
         throw new Error(data.error);
       }
 
