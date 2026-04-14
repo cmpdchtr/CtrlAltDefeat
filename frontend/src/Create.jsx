@@ -76,6 +76,24 @@ const Create = () => {
     e.target.value = null; // reset input
   };
 
+  const importWayground = async () => {
+    const url = prompt(t('create.waygroundPrompt', 'Вставте посилання на Wayground (API/JSON):'));
+    if (!url) return;
+    try {
+      const response = await fetch(url);
+      const imported = await response.json();
+      if (Array.isArray(imported)) {
+        setQuestions(imported);
+        alert(t('create.importSuccess', 'Успішно імпортовано!'));
+      } else {
+        alert(t('create.importError', 'Невірний формат даних. Очікується масив.'));
+      }
+    } catch (err) {
+      alert(t('create.importFailed', 'Не вдалося завантажити дані за посиланням. Перевірте консоль для деталей.'));
+      console.error("Wayground import error:", err);
+    }
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-blue-800 font-tahoma flex flex-col box-border relative">
       <LanguageSwitcher />
@@ -271,6 +289,12 @@ const Create = () => {
           <div className="border-t-2 border-gray-400 pt-3 mt-4 flex-shrink-0 flex justify-between items-center bg-[#ece9d8] sticky bottom-0 z-10 w-full px-2 pb-2">
             <span className="text-sm font-bold text-gray-800">{t('create.totalQuestions', { count: questions.length })}</span>
             <div className="flex gap-2">
+              <button 
+                onClick={importWayground}
+                className="py-1 px-4 font-bold flex items-center shadow-md border-2 border-white border-b-gray-600 border-r-gray-600 active:border-t-gray-600 active:border-l-gray-600 active:border-b-white active:border-r-white bg-gray-200 cursor-pointer"
+              >
+                {t('create.wayground', 'Wayground')}
+              </button>
               <label className="py-1 px-4 font-bold flex items-center shadow-md border-2 border-white border-b-gray-600 border-r-gray-600 active:border-t-gray-600 active:border-l-gray-600 active:border-b-white active:border-r-white bg-gray-200 cursor-pointer">
                 {t('create.importJson')}
                 <input type="file" accept=".json" onChange={importJSON} style={{ display: 'none' }} />
