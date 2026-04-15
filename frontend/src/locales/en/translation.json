@@ -12,7 +12,7 @@
     "ok": "OK",
     "cancel": "Cancel",
     "hostGame": "Host a Game",
-    "createRoom": "Create a Room",
+    "createRoom": "Create a quiz",
     "loading": "Loading...",
     "connection": "Connection: {{code}} - {{name}}",
     "chooseAvatar": "Choose an Avatar",
