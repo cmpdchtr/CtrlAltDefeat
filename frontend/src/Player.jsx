@@ -103,8 +103,8 @@ function Player() {
         <div className="window-body m-0 p-8 bg-[#ece9d8]">
           <div className="flex items-center mb-8 bg-white p-4 border-2 inset shadow-inner"><LogIn size={48} className="mr-4 text-blue-700" /><p className="text-lg font-bold leading-tight">{t('player.logOnDesc')}</p></div>
           {error && <div className="bg-red-100 border-2 border-red-500 p-3 mb-6 text-red-700 font-bold text-center animate-shake">{error}</div>}
-          <form onSubmit={joinRoom} className="space-y-6">
-            <div className="flex flex-col gap-2">
+          <form onSubmit={joinRoom} className="flex flex-col">
+            <div className="flex flex-col gap-2 mb-6">
               <label className="font-bold text-xl text-gray-700">{t('player.roomCode')}</label>
               <input 
                 type="text" 
@@ -116,7 +116,7 @@ function Player() {
                 placeholder="XXXX"
               />
             </div>
-            <div className="flex flex-col gap-2 mb-6">
+            <div className="flex flex-col gap-2 mb-8">
               <label className="font-bold text-xl text-gray-700">{t('player.userName')}</label>
               <input 
                 type="text" 
@@ -128,8 +128,8 @@ function Player() {
                 placeholder={t('player.yourName', 'Ваше ім\'я')}
               />
             </div>
-            <div className="flex justify-center pt-2">
-              <button type="submit" className="w-full py-3 text-2xl font-bold bg-[#ece9d8] text-black border-2 border-white border-b-gray-600 border-r-gray-600 active:border-t-gray-600 active:border-l-gray-600 active:border-b-white active:border-r-white shadow-md hover:bg-white transition-all cursor-pointer">
+            <div className="flex justify-center mt-6">
+              <button type="submit" className="w-full py-4 text-2xl font-bold bg-[#ece9d8] text-black border-2 border-white border-b-gray-600 border-r-gray-600 active:border-t-gray-600 active:border-l-gray-600 active:border-b-white active:border-r-white shadow-md hover:bg-white transition-all cursor-pointer">
                 {t('player.ok')}
               </button>
             </div>
