@@ -93,38 +93,59 @@ function Host() {
         )}
 
         {['question', 'reveal', 'end'].includes(room.state) && (
-          <div className="window absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ width: '85%', height: '85%', maxWidth: '900px', display: 'flex', flexDirection: 'column' }}>
+          <div className="window absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{ width: '95%', height: '90%', maxWidth: '1200px', display: 'flex', flexDirection: 'column' }}>
             <div className="title-bar" style={{ flexShrink: 0 }}><div className="title-bar-text">{t('host.quizExe')}</div></div>
-            <div className="window-body bg-white flex-grow flex flex-col p-6 overflow-hidden">
+            <div className="window-body bg-white flex-grow flex flex-col p-8 overflow-hidden">
               {room.state === 'end' ? (
                 <div className="text-center flex flex-col items-center h-full">
-                  <h1 className="text-3xl font-bold mt-4 text-blue-800">{t('host.gameOverTitle')}</h1>
-                  <div className="flex-grow w-full overflow-y-auto mt-4 border-2">
-                    <table className="w-full">
-                      <thead className="bg-[#ece9d8] sticky top-0"><tr><th className="p-2">{t('host.player')}</th><th className="p-2">{t('host.score')}</th><th className="p-2">{t('host.status')}</th></tr></thead>
+                  <h1 className="text-5xl font-bold mt-4 text-blue-800 uppercase tracking-tight">{t('host.gameOverTitle')}</h1>
+                  <div className="flex-grow w-full overflow-y-auto mt-6 border-2 inset shadow-inner bg-gray-50">
+                    <table className="w-full text-xl">
+                      <thead className="bg-[#ece9d8] sticky top-0 border-b-2"><tr><th className="p-4 text-left">{t('host.player')}</th><th className="p-4">{t('host.score')}</th><th className="p-4">{t('host.status')}</th></tr></thead>
                       <tbody>{Object.values(room.players).sort((a,b)=>b.score-a.score).map((p, i) => (
-                        <tr key={i} className="border-b"><td className="p-2 flex items-center">{p.avatar !== null && <div className="w-6 h-6 mr-2"><RetroAvatar id={p.avatar} /></div>}{p.name}</td><td className="p-2 text-center">{p.score}</td><td className={clsx("p-2 text-center font-bold", p.status==='alive'?'text-green-600':'text-red-600')}>{p.status.toUpperCase()}</td></tr>
+                        <tr key={i} className="border-b hover:bg-blue-50 transition-colors"><td className="p-4 flex items-center font-bold text-2xl">{p.avatar !== null && <div className="w-10 h-10 mr-4"><RetroAvatar id={p.avatar} /></div>}{p.name}</td><td className="p-4 text-center font-mono text-3xl font-bold text-blue-700">{p.score}</td><td className={clsx("p-4 text-center font-bold text-xl", p.status==='alive'?'text-green-600':'text-red-600')}>{p.status.toUpperCase()}</td></tr>
                       ))}</tbody>
                     </table>
                   </div>
-                  <button onClick={() => window.location.reload()} className="mt-6 font-bold px-6 py-2 flex-shrink-0">{t('host.restartServer')}</button>
+                  <button onClick={() => window.location.reload()} className="mt-8 font-bold px-10 py-4 text-2xl flex-shrink-0">{t('host.restartServer')}</button>
                 </div>
               ) : (
                 <>
                   <div className="flex-shrink-0">
-                    <fieldset><legend>{t('host.timer')}</legend><div className="flex items-center w-full mt-1"><span className="w-8 font-bold">{timer}s</span><div className="flex-grow flex border h-[22px] p-[2px] bg-gray-100">
-                      {Array.from({ length: 30 }).map((_, i) => (<div key={i} className={clsx("flex-1 h-full mx-[1px]", (i/30 < timer/(room.default_timer||15)) ? (timer<=5?"bg-red-600":"bg-green-600") : "bg-transparent")} />))}
+                    <fieldset className="mb-6"><legend className="text-lg px-2">{t('host.timer')}</legend><div className="flex items-center w-full mt-2 px-2"><span className="w-16 font-bold text-2xl text-blue-800">{timer}s</span><div className="flex-grow flex border-2 inset h-[32px] p-[3px] bg-gray-200 shadow-inner">
+                      {Array.from({ length: 40 }).map((_, i) => (<div key={i} className={clsx("flex-1 h-full mx-[1px]", (i/40 < timer/(room.default_timer||15)) ? (timer<=5?"bg-red-600 shadow-[inset_0_0_5px_rgba(0,0,0,0.5)]":"bg-green-600 shadow-[inset_0_0_5px_rgba(0,0,0,0.5)]") : "bg-transparent")} />))}
                     </div></div></fieldset>
-                    <h2 className="text-2xl font-bold my-6 text-center">{currentQ.question}</h2>
+                    <h2 className="text-5xl font-bold my-8 text-center leading-tight text-gray-900 drop-shadow-sm">{currentQ.question}</h2>
                   </div>
-                  <div className={clsx("grid gap-4 flex-grow overflow-y-auto p-2", (currentQ.options?.length > 4) ? "grid-cols-1" : "grid-cols-2")} style={{ alignContent: 'start' }}>
+                  <div className={clsx("grid gap-6 flex-grow overflow-y-auto p-4 rounded bg-gray-50 border-2 inset shadow-inner", (currentQ.options?.length > 4) ? "grid-cols-1" : "grid-cols-2")} style={{ alignContent: 'start' }}>
                     {['multiple_choice', 'image_options'].includes(qType) && currentQ.options.map((opt, i) => {
-                      let style = "border-2 p-4 font-bold flex items-center justify-center min-h-[60px] ";
+                      let style = "border-2 p-6 font-bold flex items-center justify-center min-h-[100px] text-3xl shadow-md transition-all ";
                       const isCorrect = Array.isArray(currentQ.correct) ? currentQ.correct.includes(i) : currentQ.correct === i;
-                      if (room.state === 'reveal') style += isCorrect ? "bg-green-500 text-white" : "bg-red-100 opacity-50";
-                      return (<div key={i} className={style}>{String.fromCharCode(65+i)}: {qType==='image_options'?<img src={opt} className="max-h-20 ml-2" alt=""/>:opt}</div>);
+                      if (room.state === 'reveal') {
+                        style += isCorrect ? "bg-green-500 text-white scale-105 z-10 border-green-700" : "bg-red-100 opacity-40 grayscale-[0.5]";
+                      } else {
+                        style += "bg-white hover:border-blue-500 hover:bg-blue-50 cursor-default";
+                      }
+                      return (
+                        <div key={i} className={style}>
+                          <span className="mr-4 opacity-50 text-4xl">{String.fromCharCode(65+i)}:</span> 
+                          <span className="flex-grow text-center">{qType==='image_options'?<img src={opt} className="max-h-32 mx-auto shadow-sm border" alt=""/>:opt}</span>
+                        </div>
+                      );
                     })}
-                    {qType === 'text' && <div className="col-span-2 text-center text-3xl">{room.state==='reveal'?<div className="p-4 bg-green-100 border-2 border-green-500">{t('host.correctAnswerIs')} {currentQ.correct}</div>:"_ _ _ _ _"}</div>}
+                    {qType === 'text' && (
+                      <div className="col-span-2 flex flex-col items-center justify-center h-full gap-8">
+                        {room.state==='reveal' ? (
+                          <div className="p-10 bg-green-100 border-4 border-green-500 rounded shadow-xl text-5xl font-black text-green-800 animate-bounce">
+                            {t('host.correctAnswerIs')} <br/> <span className="text-7xl block mt-4 underline decoration-double">{currentQ.correct}</span>
+                          </div>
+                        ) : (
+                          <div className="flex gap-4">
+                            {Array.from({length: 8}).map((_, i) => <div key={i} className="w-16 h-20 border-b-8 border-gray-300 animate-pulse" />)}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </>
               )}

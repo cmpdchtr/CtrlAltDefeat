@@ -139,10 +139,32 @@ body {
 
 .mobile-btn {
   width: 100%;
-  padding: 10px;
-  font-size: 18px;
-  margin: 5px 0;
+  padding: 24px;
+  font-size: 28px;
+  margin: 12px 0;
   font-weight: bold;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+  border: 3px solid white;
+  border-right-color: #808080;
+  border-bottom-color: #808080;
+  background-color: #dfdfdf;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.mobile-btn:active {
+  border: 3px solid #808080;
+  border-right-color: white;
+  border-bottom-color: white;
+  padding-top: 26px;
+  padding-bottom: 22px;
+  background-color: #c0c0c0;
+}
+
+.mobile-btn.active {
+  background-color: #000080;
+  color: white;
+  border-color: #000040;
 }
 
 .winner {

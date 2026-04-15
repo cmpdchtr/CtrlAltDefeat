@@ -96,21 +96,43 @@ function Player() {
   );
 
   if (!joined) return (
-    <div className="h-screen w-screen bg-blue-800 flex items-center justify-center p-2">
+    <div className="h-screen w-screen bg-blue-800 flex items-center justify-center p-4 overflow-hidden">
       <LanguageSwitcher position="bottom-right" />
-      <div className="window" style={{ width: '100%', maxWidth: '350px' }}>
-        <div className="title-bar"><div className="title-bar-text">{t('player.logOnTitle')}</div></div>
-        <div className="window-body m-0 p-2">
-          <div className="flex items-center mb-2"><LogIn size={32} className="mr-3 text-blue-600" /><p>{t('player.logOnDesc')}</p></div>
-          {error && <p className="text-red-600 mb-2 font-bold">{error}</p>}
-          <form onSubmit={joinRoom}>
-            <div className="field-row"><label style={{width: '80px'}}>{t('player.roomCode')}</label>
-              <input type="text" value={code} onChange={e => setCode(e.target.value.toUpperCase())} maxLength={4} required className="uppercase flex-grow"/>
+      <div className="window shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-500" style={{ width: '100%', maxWidth: '450px' }}>
+        <div className="title-bar"><div className="title-bar-text uppercase">{t('player.logOnTitle')}</div></div>
+        <div className="window-body m-0 p-8 bg-[#ece9d8]">
+          <div className="flex items-center mb-8 bg-white p-4 border-2 inset shadow-inner"><LogIn size={48} className="mr-4 text-blue-700" /><p className="text-lg font-bold leading-tight">{t('player.logOnDesc')}</p></div>
+          {error && <div className="bg-red-100 border-2 border-red-500 p-3 mb-6 text-red-700 font-bold text-center animate-shake">{error}</div>}
+          <form onSubmit={joinRoom} className="space-y-6">
+            <div className="flex flex-col gap-2">
+              <label className="font-bold text-xl text-gray-700">{t('player.roomCode')}</label>
+              <input 
+                type="text" 
+                value={code} 
+                onChange={e => setCode(e.target.value.toUpperCase())} 
+                maxLength={4} 
+                required 
+                className="uppercase w-full p-4 text-4xl font-mono font-bold text-center tracking-widest border-2 border-gray-400 inset focus:border-blue-500 outline-none shadow-inner"
+                placeholder="XXXX"
+              />
             </div>
-            <div className="field-row mt-2"><label style={{width: '80px'}}>{t('player.userName')}</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} required maxLength={15} className="flex-grow"/>
+            <div className="flex flex-col gap-2">
+              <label className="font-bold text-xl text-gray-700">{t('player.userName')}</label>
+              <input 
+                type="text" 
+                value={name} 
+                onChange={e => setName(e.target.value)} 
+                required 
+                maxLength={15} 
+                className="w-full p-4 text-2xl font-bold border-2 border-gray-400 inset focus:border-blue-500 outline-none shadow-inner"
+                placeholder={t('player.yourName', 'Ваше ім\'я')}
+              />
             </div>
-            <div className="flex justify-end mt-4"><button type="submit" style={{width: '80px', marginRight: '8px'}}>{t('player.ok')}</button></div>
+            <div className="flex justify-center pt-4">
+              <button type="submit" className="w-full py-4 text-2xl font-bold bg-blue-600 !text-white shadow-[0_4px_0_rgb(30,58,138)] active:shadow-none active:translate-y-1 transition-all">
+                {t('player.ok')}
+              </button>
+            </div>
           </form>
           <div className="pt-4 border-t border-gray-300 flex flex-col" style={{ marginTop: '12px' }}>
             <button type="button" onClick={() => window.open('/host', '_blank')} className="w-full flex items-center justify-center gap-2 py-2" style={{ marginBottom: '10px' }}>
@@ -134,50 +156,59 @@ function Player() {
   return (
     <div className="h-screen w-screen bg-blue-800 p-2 font-tahoma flex flex-col box-border">
       <LanguageSwitcher position="bottom-right" />
-      <div className="window flex-grow flex flex-col">
-        <div className="title-bar"><div className="title-bar-text">{t('player.connection', { code: room?.code, name })}</div></div>
-        <div className="window-body m-0 p-2 flex-grow flex flex-col items-center justify-center bg-white relative">
+      <div className="window flex-grow flex flex-col shadow-2xl">
+        <div className="title-bar"><div className="title-bar-text uppercase tracking-wider">{t('player.connection', { code: room?.code, name })}</div></div>
+        <div className="window-body m-0 p-6 flex-grow flex flex-col items-center justify-center bg-white relative">
           {room?.state === 'lobby' && (
-            <div className="w-full h-full flex flex-col items-center max-w-sm mx-auto">
+            <div className="w-full h-full flex flex-col items-center max-w-md mx-auto py-4">
               {avatar === null ? (
-                <div className="window w-full bg-[#ece9d8]">
+                <div className="window w-full bg-[#ece9d8] shadow-lg">
                   <div className="title-bar"><div className="title-bar-text">{t('player.chooseAvatar')}</div></div>
-                  <div className="window-body p-4 bg-[#ece9d8]"><fieldset className="p-2 border border-gray-400">
-                    <legend className="px-1 text-sm">{t('player.clickAvatar')}</legend>
-                    <div className="flex flex-wrap justify-center gap-2 mt-2 max-w-[260px] mx-auto">
-                      {avatars.map((a, i) => (<button key={i} onClick={() => setPlayerAvatar(a)} className="w-[52px] h-[52px] p-1 bg-gray-200 border-2 border-white border-b-gray-500 border-r-gray-500 active:border-t-gray-500 active:border-l-gray-500"><RetroAvatar id={a} /></button>))}
+                  <div className="window-body p-6 bg-[#ece9d8]"><fieldset className="p-4 border-2 border-white border-b-gray-400 border-r-gray-400 shadow-inner">
+                    <legend className="px-2 text-lg font-bold">{t('player.clickAvatar')}</legend>
+                    <div className="grid grid-cols-4 gap-4 mt-2">
+                      {avatars.map((a, i) => (<button key={i} onClick={() => setPlayerAvatar(a)} className="aspect-square p-2 bg-gray-200 border-2 border-white border-b-gray-500 border-r-gray-500 active:border-t-gray-500 active:border-l-gray-500 hover:bg-white transition-colors"><RetroAvatar id={a} /></button>))}
                     </div>
                   </fieldset></div>
                 </div>
-              ) : (<div className="text-center mt-4"><div className="mb-4 mx-auto w-24 h-24 p-2 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200 flex items-center justify-center"><RetroAvatar id={avatar} /></div>
-                  <h2 className="text-xl font-bold mb-2">{t('player.connected')}</h2><p>{t('player.waitingHost')}</p></div>
+              ) : (<div className="text-center mt-6 animate-in fade-in zoom-in duration-300"><div className="mb-8 mx-auto w-40 h-40 p-4 border-4 border-white border-b-gray-500 border-r-gray-500 bg-gray-100 flex items-center justify-center shadow-xl"><RetroAvatar id={avatar} /></div>
+                  <h2 className="text-3xl font-bold mb-4 text-blue-900">{t('player.connected')}</h2><p className="text-xl text-gray-600 italic">{t('player.waitingHost')}</p></div>
               )}
             </div>
           )}
 
           {room?.state === 'question' && (
-            <div className="w-full h-full flex flex-col">
-              <h2 className="text-center font-bold text-xl mb-2 text-blue-900 border-b-2 border-blue-200 pb-2">{t('player.selectAnswer')}</h2>
-              <div className="flex flex-col gap-2 flex-grow justify-center">
+            <div className="w-full h-full flex flex-col max-w-md">
+              <h2 className="text-center font-bold text-3xl mb-6 text-blue-900 border-b-4 border-blue-100 pb-4">{t('player.selectAnswer')}</h2>
+              <div className="flex flex-col gap-4 flex-grow justify-center">
                 {(qType === 'multiple_choice' || qType === 'image_options') && (
-                  <div className="flex flex-col gap-2 w-full">
-                    <div className="grid grid-cols-1 gap-2">
+                  <div className="flex flex-col gap-4 w-full">
+                    <div className="grid grid-cols-1 gap-4">
                       {currentQuestion.options.map((opt, i) => (
-                        <button key={i} className={clsx("mobile-btn", (choice?.includes?.(i) || multiChoice.includes(i)) ? "active !bg-blue-600 !text-white" : "")} onClick={() => toggleChoice(i)} disabled={choice !== null && choice !== undefined}>
-                          {qType === 'image_options' ? <img src={opt} style={{maxHeight:'60px', margin:'0 auto'}} alt="" /> : String.fromCharCode(65 + i)}
+                        <button 
+                          key={i} 
+                          className={clsx("mobile-btn !m-0 !py-8", (choice?.includes?.(i) || multiChoice.includes(i)) ? "active" : "")} 
+                          onClick={() => toggleChoice(i)} 
+                          disabled={choice !== null && choice !== undefined}
+                        >
+                          {qType === 'image_options' ? <img src={opt} style={{maxHeight:'100px', margin:'0 auto'}} alt="" /> : String.fromCharCode(65 + i)}
                         </button>
                       ))}
                     </div>
-                    <button className="mobile-btn !bg-green-600 !text-white mt-4 font-bold" onClick={() => submitAnswer(multiChoice)} disabled={choice !== null || multiChoice.length === 0}>
+                    <button 
+                      className="mobile-btn !bg-green-600 !text-white mt-8 !py-6 text-3xl shadow-[0_4px_0_rgb(22,101,52)] active:shadow-none active:translate-y-1 transition-all" 
+                      onClick={() => submitAnswer(multiChoice)} 
+                      disabled={choice !== null || multiChoice.length === 0}
+                    >
                       {t('player.submit')}
                     </button>
                   </div>
                 )}
-                {qType === 'text' && (<div className="flex flex-col gap-4"><input type="text" value={textAnswer} onChange={e => setTextAnswer(e.target.value)} className="border-2 border-gray-400 p-2 text-lg w-full" placeholder={t('player.typeAnswer')}/><button className="mobile-btn" onClick={() => submitAnswer(textAnswer)} disabled={choice !== null}>{t('player.submit')}</button></div>)}
-                {qType === 'percentage' && (<div className="flex flex-col gap-4 items-center w-full"><span className="text-xl font-bold">{percentAnswer}%</span><input type="range" min="0" max="100" value={percentAnswer} onChange={e => setPercentAnswer(parseInt(e.target.value))} className="w-full"/><button className="mobile-btn" onClick={() => submitAnswer(percentAnswer)} disabled={choice !== null}>{t('player.submit')}</button></div>)}
-                {qType === 'image_zone' && (<div className="flex flex-col items-center gap-4 w-full"><div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}><img src={currentQuestion?.imageUrl} alt="" style={{ width:'100%', height:'auto', display:'block', border:'2px solid black' }} onClick={(e) => { const rect = e.target.getBoundingClientRect(); submitAnswer({ x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 }); }}/></div><p className="text-center text-sm">{t('player.tapImage')}</p></div>)}
+                {qType === 'text' && (<div className="flex flex-col gap-6"><input type="text" value={textAnswer} onChange={e => setTextAnswer(e.target.value)} className="border-4 border-gray-300 p-6 text-3xl w-full font-bold focus:border-blue-500 outline-none" placeholder={t('player.typeAnswer')}/><button className="mobile-btn !bg-blue-600 !text-white !py-6 text-3xl" onClick={() => submitAnswer(textAnswer)} disabled={choice !== null}>{t('player.submit')}</button></div>)}
+                {qType === 'percentage' && (<div className="flex flex-col gap-8 items-center w-full"><span className="text-5xl font-black text-blue-800">{percentAnswer}%</span><input type="range" min="0" max="100" value={percentAnswer} onChange={e => setPercentAnswer(parseInt(e.target.value))} className="w-full h-12"/><button className="mobile-btn !bg-blue-600 !text-white !py-6 text-3xl" onClick={() => submitAnswer(percentAnswer)} disabled={choice !== null}>{t('player.submit')}</button></div>)}
+                {qType === 'image_zone' && (<div className="flex flex-col items-center gap-6 w-full"><div style={{ position: 'relative', width: '100%', maxWidth: '400px' }} className="shadow-2xl border-4 border-black"><img src={currentQuestion?.imageUrl} alt="" style={{ width:'100%', height:'auto', display:'block' }} onClick={(e) => { const rect = e.target.getBoundingClientRect(); submitAnswer({ x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 }); }}/></div><p className="text-center text-xl font-bold text-gray-700 animate-pulse">{t('player.tapImage')}</p></div>)}
               </div>
-              {choice !== null && choice !== undefined && <p className="text-center mt-2 text-green-700 font-bold">{t('player.answerReceived')}</p>}
+              {choice !== null && choice !== undefined && <div className="text-center mt-6 p-4 bg-green-50 border-2 border-green-500 rounded animate-bounce text-green-700 font-bold text-2xl">{t('player.answerReceived')}</div>}
             </div>
           )}
 

@@ -204,11 +204,11 @@ const Create = () => {
     <div className="h-screen w-screen overflow-hidden bg-blue-800 font-tahoma flex flex-col box-border relative">
       <LanguageSwitcher position="top-right" />
       <div 
-        className="window absolute shadow-xl flex flex-col" 
+        className="window absolute shadow-2xl flex flex-col" 
         style={{ 
-          width: '90%', 
-          height: '85%', 
-          maxWidth: '1000px',
+          width: '95%', 
+          height: '88%', 
+          maxWidth: '1200px',
           left: '50%', 
           top: '48%', 
           transform: 'translate(-50%, -50%)',
@@ -216,7 +216,7 @@ const Create = () => {
         }}
       >
         <div className="title-bar flex-shrink-0">
-          <div className="title-bar-text">{t('create.quizConstructorExe')}</div>
+          <div className="title-bar-text uppercase tracking-widest">{t('create.quizConstructorExe')}</div>
           <div className="title-bar-controls">
             <button aria-label="Minimize"></button>
             <button aria-label="Maximize"></button>
@@ -224,14 +224,14 @@ const Create = () => {
           </div>
         </div>
 
-        <div className="window-body m-0 p-4 bg-[#ece9d8] flex-grow flex flex-col relative" style={{ overflowY: 'auto' }}>
+        <div className="window-body m-0 p-6 bg-[#ece9d8] flex-grow flex flex-col relative" style={{ overflowY: 'auto' }}>
 
-          <div className="flex gap-2 items-center mb-4 p-2 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200">
-            <label className="font-bold whitespace-nowrap">{t('create.questionType')}</label>
+          <div className="flex gap-4 items-center mb-6 p-4 border-2 border-white border-b-gray-500 border-r-gray-500 bg-gray-200 shadow-md">
+            <label className="font-bold text-lg whitespace-nowrap">{t('create.questionType')}</label>
             <select 
               value={currentType} 
               onChange={(e) => setCurrentType(e.target.value)}
-              className="flex-grow p-1 border-2 border-gray-500 border-r-white border-b-white bg-white"
+              className="flex-grow p-2 text-lg border-2 border-gray-500 border-r-white border-b-white bg-white font-bold"
             >
               <option value="multiple_choice">{t('create.typeMultiple')}</option>
               <option value="text">{t('create.typeText')}</option>
@@ -239,70 +239,73 @@ const Create = () => {
               <option value="image_options">{t('create.typeImageOptions')}</option>
               <option value="percentage">{t('create.typePercentage')}</option>
             </select>
-            <button onClick={addQuestion} className="px-4 py-1 flex items-center font-bold">
-              <PlusCircle size={14} className="mr-1" /> {t('create.add')}
+            <button onClick={addQuestion} className="px-6 py-2 flex items-center font-bold text-lg bg-blue-100 hover:bg-blue-200 transition-colors">
+              <PlusCircle size={18} className="mr-2" /> {t('create.add')}
             </button>
           </div>
 
-          <div className="flex-grow flex flex-col gap-4 mb-4">
+          <div className="flex-grow flex flex-col gap-8 mb-6">
             {questions.length === 0 && (
-              <div className="flex items-center justify-center h-full text-gray-500 italic">
-                {t('create.noQuestions')}
+              <div className="flex flex-col items-center justify-center h-full text-gray-400 italic gap-4">
+                <PlusCircle size={64} className="opacity-20" />
+                <p className="text-2xl">{t('create.noQuestions')}</p>
               </div>
             )}
 
             {questions.map((q, idx) => (
-              <fieldset key={idx} className="p-3 border border-gray-400 bg-white shadow-sm relative">
-                <legend className="px-2 font-bold text-blue-800 bg-white border border-gray-300">
-                  {t('create.questionN', { num: idx + 1 })} ({q.type})
+              <fieldset key={idx} className="p-6 border-2 border-gray-400 bg-white shadow-lg relative rounded-sm transition-all hover:border-blue-400">
+                <legend className="px-3 font-bold text-xl text-blue-800 bg-white border-2 border-gray-300 shadow-sm">
+                  {t('create.questionN', { num: idx + 1 })} — <span className="uppercase text-sm opacity-60">{q.type.replace('_', ' ')}</span>
                 </legend>
                 
                 <button 
                   onClick={() => removeQuestion(idx)} 
-                  className="absolute top-0 right-2 w-6 h-6 p-0 flex items-center justify-center !text-red-600 font-bold"
+                  className="absolute -top-3 -right-3 w-10 h-10 p-0 flex items-center justify-center bg-red-100 hover:bg-red-600 hover:text-white !text-red-600 font-bold border-2 border-red-200 rounded-full shadow-md transition-all z-10"
                   title={t('create.removeQuestion')}
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={20} />
                 </button>
 
-                <div className="field-row mb-3">
-                  <label style={{ width: '80px' }}>{t('create.text')}</label>
+                <div className="field-row mb-6">
+                  <label className="font-bold text-lg" style={{ width: '100px' }}>{t('create.text')}</label>
                   <input 
                     type="text" 
                     value={q.question} 
                     onChange={(e) => updateQuestion(idx, 'question', e.target.value)} 
-                    className="flex-grow"
+                    className="flex-grow p-3 text-lg font-medium border-2 border-gray-400 inset focus:border-blue-500 outline-none"
+                    placeholder={t('create.enterQuestionText', 'Введіть текст питання...')}
                   />
                 </div>
 
                 {(q.type === 'multiple_choice' || q.type === 'image_options') && (
-                  <div className="flex flex-col gap-2 mt-2 px-2 pb-2 bg-gray-100 border border-gray-300">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                  <div className="flex flex-col gap-4 mt-4 p-4 bg-gray-50 border-2 border-gray-200 rounded shadow-inner">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {q.options.map((opt, oIdx) => (
-                        <div key={oIdx} className="field-row">
+                        <div key={oIdx} className="flex items-center gap-3 bg-white p-3 border border-gray-300 shadow-sm">
                           <input 
                             type="checkbox" 
                             id={`q-${idx}-opt-${oIdx}`}
                             checked={Array.isArray(q.correct) ? q.correct.includes(oIdx) : q.correct === oIdx}
                             onChange={() => toggleCorrectOption(idx, oIdx)}
+                            className="w-6 h-6 cursor-pointer"
                           />
-                          <label htmlFor={`q-${idx}-opt-${oIdx}`} className="ml-1 mr-2">{String.fromCharCode(65 + oIdx)}:</label>
+                          <label htmlFor={`q-${idx}-opt-${oIdx}`} className="font-bold text-xl text-blue-700">{String.fromCharCode(65 + oIdx)}:</label>
                           <input 
                             type="text" 
                             placeholder={q.type === 'image_options' ? 'Image URL' : t('create.option', { letter: String.fromCharCode(65 + oIdx) })} 
                             value={opt} 
                             onChange={(e) => updateOption(idx, oIdx, e.target.value)} 
-                            className="flex-grow"
+                            className="flex-grow p-2 border-b-2 border-gray-200 focus:border-blue-400 outline-none font-medium"
                           />
-                          <button onClick={() => removeOptionField(idx, oIdx)} className="ml-1 p-1 h-6 w-6 flex items-center justify-center bg-red-100 text-red-700 border border-gray-400">
-                            <Minus size={12} />
+                          <button onClick={() => removeOptionField(idx, oIdx)} className="p-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 transition-colors">
+                            <Minus size={16} />
                           </button>
                         </div>
                       ))}
                     </div>
                     <div className="flex justify-center mt-2">
-                       <button onClick={() => addOptionField(idx)} className="flex items-center gap-1 text-xs px-3 py-1 font-bold">
-                         <Plus size={12} /> Add Option
+                       <button onClick={() => addOptionField(idx)} className="flex items-center gap-2 text-sm px-6 py-2 font-bold bg-green-50 text-green-700 border-2 border-green-200 hover:bg-green-600 hover:text-white transition-all shadow-sm">
+                         <Plus size={16} /> {t('create.addOption', 'Додати варіант')}
                        </button>
                     </div>
                   </div>
