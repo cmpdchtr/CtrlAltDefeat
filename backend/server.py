@@ -97,7 +97,8 @@ async def create_room(sid):
         "current_q": 0,
         "questions": list(questions),
         "host": sid,
-        "timer": 0
+        "timer": 0,
+        "default_timer": 15
     }
     await sio.enter_room(sid, code)
     await sio.emit('room_created', {'code': code}, room=sid)
