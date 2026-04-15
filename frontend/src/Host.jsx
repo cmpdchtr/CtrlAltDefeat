@@ -116,7 +116,7 @@ function Host() {
                       <legend className="text-xl px-2 font-bold text-gray-700 italic">{t('host.timer')}</legend>
                       <div className="w-full mt-2 bg-white border-2 inset p-[2px] h-[36px] flex shadow-inner overflow-hidden">
                         {Array.from({ length: 24 }).map((_, i) => {
-                          const isFilled = (i / 24) < (timer.time / timer.total);
+                          const isFilled = timer.total > 0 ? (i / 24) < ((timer.total - timer.time) / timer.total) : false;
                           return (
                             <div 
                               key={i} 
