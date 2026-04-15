@@ -112,9 +112,30 @@ function Host() {
               ) : (
                 <>
                   <div className="flex-shrink-0">
-                    <fieldset className="mb-6"><legend className="text-lg px-2">{t('host.timer')}</legend><div className="flex items-center w-full mt-2 px-2"><span className="w-16 font-bold text-2xl text-blue-800">{timer}s</span><div className="flex-grow flex border-2 inset h-[32px] p-[3px] bg-gray-200 shadow-inner">
-                      {Array.from({ length: 40 }).map((_, i) => (<div key={i} className={clsx("flex-1 h-full mx-[1px]", (i/40 < timer/(room.default_timer||15)) ? (timer<=5?"bg-red-600 shadow-[inset_0_0_5px_rgba(0,0,0,0.5)]":"bg-green-600 shadow-[inset_0_0_5px_rgba(0,0,0,0.5)]") : "bg-transparent")} />))}
-                    </div></div></fieldset>
+                    <fieldset className="mb-8 p-6 bg-[#ece9d8] border-2 border-white border-b-gray-400 border-r-gray-400 shadow-md">
+                      <legend className="text-xl px-2 font-bold text-gray-700 italic">{t('host.timer')}</legend>
+                      <div className="w-full mt-2 bg-white border-2 inset p-[2px] h-[36px] flex shadow-inner overflow-hidden">
+                        {Array.from({ length: 24 }).map((_, i) => {
+                          const isFilled = (i/24 < timer/(room.default_timer||15));
+                          return (
+                            <div 
+                              key={i} 
+                              className={clsx(
+                                "w-[14px] h-full mr-[2px] transition-opacity duration-300",
+                                isFilled 
+                                  ? (timer <= 5 
+                                      ? "bg-gradient-to-b from-[#ff8080] via-[#ff0000] to-[#a00000]" 
+                                      : "bg-gradient-to-b from-[#b2e8b2] via-[#22cc22] to-[#11aa11]")
+                                  : "bg-transparent"
+                              )}
+                              style={isFilled ? {
+                                boxShadow: 'inset 1px 1px 0 rgba(255,255,255,0.4), inset -1px -1px 0 rgba(0,0,0,0.2)'
+                              } : {}}
+                            />
+                          );
+                        })}
+                      </div>
+                    </fieldset>
                     <h2 className="text-5xl font-bold my-8 text-center leading-tight text-gray-900 drop-shadow-sm">{currentQ.question}</h2>
                   </div>
                   <div className={clsx("grid gap-6 flex-grow overflow-y-auto p-4 rounded bg-gray-50 border-2 inset shadow-inner", (currentQ.options?.length > 4) ? "grid-cols-1" : "grid-cols-2")} style={{ alignContent: 'start' }}>
