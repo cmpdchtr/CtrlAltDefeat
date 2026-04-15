@@ -116,15 +116,14 @@ function Host() {
                       <legend className="text-xl px-2 font-bold text-gray-700 italic">{t('host.timer')}</legend>
                       <div className="w-full mt-2 bg-white border-2 inset p-[2px] h-[36px] flex shadow-inner overflow-hidden">
                         {Array.from({ length: 24 }).map((_, i) => {
-                          const maxTime = room.default_timer || 15;
-                          const isFilled = (i / 24) < (timer / maxTime);
+                          const isFilled = (i / 24) < (timer.time / timer.total);
                           return (
                             <div 
                               key={i} 
                               className={clsx(
                                 "w-[14px] h-full mr-[2px] transition-all duration-200",
                                 isFilled 
-                                  ? (timer <= 5 
+                                  ? (timer.time <= 5 
                                       ? "bg-gradient-to-b from-[#ff8080] via-[#ff0000] to-[#a00000]" 
                                       : "bg-gradient-to-b from-[#b2e8b2] via-[#22cc22] to-[#11aa11]")
                                   : "bg-transparent"
