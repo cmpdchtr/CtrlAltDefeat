@@ -16,7 +16,7 @@ const socket = io(socketUrl);
 function Host() {
   const { t } = useTranslation();
   const [room, setRoom] = useState(null);
-  const [timer, setTimer] = useState(0);
+  const [timer, setTimer] = useState({ time: 0, total: 15 });
 
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -24,7 +24,7 @@ function Host() {
     if (isMobile) return;
     socket.emit('create_room');
     socket.on('room_update', (roomData) => setRoom(roomData));
-    socket.on('timer', (data) => setTimer(data.time));
+    socket.on('timer', (data) => setTimer({ time: data.time, total: data.total }));
     return () => { socket.off('room_update'); socket.off('timer'); };
   }, []);
 

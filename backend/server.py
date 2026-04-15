@@ -177,7 +177,7 @@ async def game_loop(code):
         if room['state'] != 'question' or room.get('timer_skip', False):
             break
         room['timer'] = t
-        await sio.emit('timer', {'time': t}, room=code)
+        await sio.emit('timer', {'time': t, 'total': timer_duration}, room=code)
         await asyncio.sleep(1)
     if room['state'] == 'question':
         await reveal_answer(code)
