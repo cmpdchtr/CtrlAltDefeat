@@ -115,13 +115,13 @@ function Host() {
                     <fieldset className="mb-8 p-6 bg-[#ece9d8] border-2 border-white border-b-gray-400 border-r-gray-400 shadow-md">
                       <legend className="text-xl px-2 font-bold text-gray-700 italic">{t('host.timer')}</legend>
                       <div className="w-full mt-2 bg-white border-2 inset p-[2px] h-[36px] flex shadow-inner overflow-hidden">
-                        {Array.from({ length: 24 }).map((_, i) => {
-                          const isFilled = timer.total > 0 ? (i / 24) < ((timer.total - timer.time) / timer.total) : false;
+                        {Array.from({ length: 60 }).map((_, i) => {
+                          const isFilled = timer.total > 0 ? (i / 60) < (timer.time / timer.total) : false;
                           return (
                             <div 
                               key={i} 
                               className={clsx(
-                                "w-[14px] h-full mr-[2px] transition-all duration-200",
+                                "flex-1 h-full mx-[2px] transition-all duration-200",
                                 isFilled 
                                   ? (timer.time <= 5 
                                       ? "bg-gradient-to-b from-[#ff8080] via-[#ff0000] to-[#a00000]" 
