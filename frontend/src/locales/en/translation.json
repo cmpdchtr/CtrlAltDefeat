@@ -55,6 +55,8 @@
     "status": "Status",
     "restartServer": "Restart Server",
     "timer": "Timer",
+    "answered": "answered",
+    "online": "online",
     "percentageQuestion": "Percentage Question",
     "correctAnswerOpt": "The correct answer is Image {{letter}}",
     "correctAnswerIs": "The correct answer is",

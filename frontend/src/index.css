@@ -3,7 +3,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* */ 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
 
 body {
   margin: 0;
@@ -15,6 +23,7 @@ body {
   background-image: url('./assets/bg.jpg');
   background-size: cover;
   background-position: center;
+  user-select: none;
 }
 
 .bsod {
@@ -31,25 +40,25 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  padding: 2rem;
+  padding: 4rem;
   box-sizing: border-box;
+  cursor: pointer;
 }
 
 .bsod h1 {
   background: white;
   color: #0000AA;
   display: inline-block;
-  padding: 0 4px;
-  font-size: 1.5rem;
+  padding: 0 10px;
+  font-size: 2rem;
+  margin-bottom: 2rem;
 }
 
 .bsod p {
-  font-size: 1.2rem;
-  margin: 5px 0;
-  line-height: 1.5;
+  font-size: 1.4rem;
+  margin: 10px 0;
+  line-height: 1.4;
 }
-
-
 
 .desktop {
   position: relative;
@@ -70,6 +79,7 @@ body {
   align-items: center;
   z-index: 500;
   padding-right: 10px;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
 }
 
 .start-btn {
@@ -87,6 +97,16 @@ body {
   border-top-right-radius: 8px;
   border-bottom-right-radius: 8px;
   box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+  transition: filter 0.1s;
+}
+
+.start-btn:hover {
+  filter: brightness(1.1);
+}
+
+.start-btn.active {
+  filter: brightness(0.8);
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
 }
 
 .start-btn img {
@@ -101,40 +121,9 @@ body {
   height: 100%;
   background: linear-gradient(to bottom, #0f8de0 0%, #15a5f1 9%, #0f8de0 18%, #0f8de0 92%, #0a66a3 100%);
   border-left: 1px solid #144498;
-  padding: 0 10px;
+  padding: 0 15px;
   color: white;
   font-size: 11px;
-}
-
-.desktop-icons {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.desktop-icon {
-  width: 70px;
-  text-align: center;
-  color: white;
-  text-shadow: 1px 1px 2px black;
-  cursor: pointer;
-}
-
-.desktop-icon img {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto;
-}
-
-.desktop-icon span {
-  display: block;
-  font-size: 12px;
-  margin-top: 4px;
-  background-color: transparent;
-}
-
-.desktop-icon:hover span {
-  background-color: rgba(0, 88, 238, 0.5);
 }
 
 .mobile-btn {
@@ -150,14 +139,15 @@ body {
   background-color: #dfdfdf;
   cursor: pointer;
   transition: all 0.1s;
+  position: relative;
+  overflow: hidden;
 }
 
 .mobile-btn:active {
   border: 3px solid #808080;
   border-right-color: white;
   border-bottom-color: white;
-  padding-top: 26px;
-  padding-bottom: 22px;
+  transform: translateY(2px);
   background-color: #c0c0c0;
 }
 
@@ -177,16 +167,32 @@ body {
   height: 100vh;
   z-index: 10000;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  color: yellow;
-  text-shadow: 2px 2px 0px blue, -2px -2px 0px blue, 2px -2px 0px blue, -2px 2px 0px blue;
-  font-size: 5rem;
+  color: #ffeb3b;
+  text-shadow: 4px 4px 0px #1a237e, -2px -2px 0px #1a237e, 2px -2px 0px #1a237e, -2px 2px 0px #1a237e;
+  font-size: 6rem;
   font-family: 'Comic Sans MS', cursive;
-  animation: pulse 1s infinite alternate;
+  text-align: center;
+  padding: 2rem;
 }
 
-@keyframes pulse {
-  from { transform: scale(1); }
-  to { transform: scale(1.1); }
+.winner button {
+  font-family: Tahoma, sans-serif;
+  font-size: 1.5rem;
+  padding: 10px 30px;
+  margin-top: 2rem;
+  color: black;
+  text-shadow: none;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.animate-shake {
+  animation: shake 0.2s ease-in-out infinite;
 }

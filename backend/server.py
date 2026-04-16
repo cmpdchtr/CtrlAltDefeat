@@ -116,9 +116,17 @@ async def join_room(sid, data):
                 return
                 
         await sio.enter_room(sid, code)
-        rooms[code]['players'][sid] = {"name": name, "score": 0, "status": "alive", "choice": None, "avatar": avatar}
+        rooms[code]['players'][sid] = {"name": name, "score": 0, "status": "alive", "choice": None, "avatar": avatar, "combo": 0}
         await sio.emit('joined', {'code': code, 'name': name}, room=sid)
         await sio.emit('room_update', rooms[code], room=code)
+
+@sio.on('send_reaction')
+async def send_reaction(sid, data):
+    code = data.get('code')
+    emoji = data.get('emoji')
+    if code in rooms:
+        # Broadcast reaction to everyone in the room (primarily for the Host)
+        await sio.emit('reaction', {'sid': sid, 'emoji': emoji}, room=code)
     else:
         await sio.emit('error', {'message': 'Room not found or game already started'}, room=sid)
 
@@ -233,8 +241,12 @@ async def reveal_answer(code):
                 except: pass
             if not is_correct:
                 p['status'] = 'dead'
+                p['combo'] = 0
                 await sio.emit('eliminated', room=sid)
-            else: p['score'] += 100
+            else:
+                p['combo'] = p.get('combo', 0) + 1
+                bonus = min(p['combo'] * 10, 50) # Max 50 bonus points
+                p['score'] += 100 + bonus
     await sio.emit('room_update', room, room=code)
     await asyncio.sleep(4)
     alive_players = [p for p in room['players'].values() if p['status'] == 'alive']

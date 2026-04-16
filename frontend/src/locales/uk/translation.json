@@ -55,6 +55,8 @@
     "status": "Статус",
     "restartServer": "Перезапустити сервер",
     "timer": "Таймер",
+    "answered": "відповіло",
+    "online": "онлайн",
     "percentageQuestion": "Питання у відсотках",
     "correctAnswerOpt": "Правильна відповідь: Зображення {{letter}}",
     "correctAnswerIs": "Правильна відповідь:",

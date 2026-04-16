@@ -2,16 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import clsx from 'clsx';
-import { LogIn, HelpCircle, Monitor, PlusCircle } from 'lucide-react';
+import { LogIn, HelpCircle, Monitor, PlusCircle, Send, Flame } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { RetroAvatar } from './RetroAvatar';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
+import { soundManager } from './SoundManager';
 
 const socketUrl = import.meta.env.DEV 
   ? `${window.location.protocol}//${window.location.hostname}:8000` 
   : undefined;
 
 const socket = io(socketUrl);
+
+const REACTION_EMOJIS = ['👍', '🔥', '👏', '🤣', '😮', '🤡', '💀', '💩'];
 
 function Player() {
   const navigate = useNavigate();
@@ -29,31 +33,43 @@ function Player() {
 
   const [textAnswer, setTextAnswer] = useState('');
   const [percentAnswer, setPercentAnswer] = useState(50);
-  const [multiChoice, setMultiChoice] = useState([]); // Array for multiple selection
+  const [multiChoice, setMultiChoice] = useState([]); 
 
   const avatars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
   useEffect(() => {
-    socket.on('joined', () => { setJoined(true); setError(''); });
-    socket.on('error', (data) => { setError(data.message); });
+    socket.on('joined', () => { 
+      setJoined(true); 
+      setError(''); 
+      soundManager.play('click');
+    });
+    socket.on('error', (data) => { 
+      setError(data.message); 
+      soundManager.play('error');
+    });
     socket.on('room_update', (roomData) => {
       setRoom(roomData);
+      const myData = roomData.players[socket.id];
       if (roomData.state === 'end') {
         const alivePlayers = Object.values(roomData.players).filter(p => p.status === 'alive');
         if (alivePlayers.length === 1 && alivePlayers[0].name === name) setStatus('winner');
-        else if (alivePlayers.length === 0 && roomData.players[socket.id]?.status === 'alive') setStatus('winner');
+        else if (alivePlayers.length === 0 && myData?.status === 'alive') setStatus('winner');
       }
-      // Reset local multiChoice when question changes
-      if (roomData.state === 'question' && roomData.players[socket.id]?.choice === null) {
+      if (roomData.state === 'question' && myData?.choice === null) {
         setMultiChoice([]);
+        setTextAnswer('');
       }
     });
-    socket.on('eliminated', () => { setStatus('dead'); });
+    socket.on('eliminated', () => { 
+      setStatus('dead'); 
+      soundManager.play('error');
+    });
     socket.on('kicked', (data) => {
       setStatus('kicked');
       setError(data.message || 'You were kicked.');
       setJoined(false);
       setRoom(null);
+      soundManager.play('error');
     });
     return () => {
       socket.off('joined'); socket.off('error'); socket.off('room_update');
@@ -61,9 +77,17 @@ function Player() {
     };
   }, [name]);
 
+  const sendReaction = (emoji) => {
+    if (room?.code) {
+      socket.emit('send_reaction', { code: room.code, emoji });
+      soundManager.play('click');
+    }
+  };
+
   const setPlayerAvatar = (selectedAvatar) => {
     setAvatar(selectedAvatar);
     if (room && room.state === 'lobby') socket.emit('set_avatar', { code: room.code, avatar: selectedAvatar });
+    soundManager.play('click');
   };
 
   const joinRoom = (e) => {
@@ -78,27 +102,48 @@ function Player() {
       } else {
         setMultiChoice([...multiChoice, index]);
       }
+      soundManager.play('click');
     }
   };
 
   const submitAnswer = (choice) => {
     if (room && room.state === 'question' && status === 'alive') {
       socket.emit('answer', { code: room.code, choice });
+      soundManager.play('notify');
     }
   };
 
-  if (status === 'winner') return <div className="winner">{t('player.winner')}<LanguageSwitcher position="bottom-right" /></div>;
+  if (status === 'winner') return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="winner">
+      {t('player.winner')}
+      <div className="mt-4"><button onClick={() => window.location.reload()}>{t('host.restartServer')}</button></div>
+      <LanguageSwitcher position="bottom-right" />
+    </motion.div>
+  );
+
   if (status === 'dead') return (
     <div className="bsod" onClick={() => window.location.reload()}>
-      <h1>{t('player.fatalError')}</h1><p>{t('player.fatalErrorDesc1')}</p><p>{t('player.fatalErrorDesc2')}</p><br/>
-      <p>{t('player.techInfo')}</p><p>*** STOP: 0x0000000A</p><LanguageSwitcher position="bottom-right" />
+      <motion.div initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }}>
+        <h1>{t('player.fatalError')}</h1>
+        <p>{t('player.fatalErrorDesc1')}</p>
+        <p>{t('player.fatalErrorDesc2')}</p><br/>
+        <p>{t('player.techInfo')}</p>
+        <p>*** STOP: 0x0000000A (0x00000001, 0x00000002, 0x00000000, 0x80050000)</p>
+        <div className="mt-10 animate-pulse text-xl">TAP ANYWHERE TO RESTART</div>
+      </motion.div>
+      <LanguageSwitcher position="bottom-right" />
     </div>
   );
 
   if (!joined) return (
     <div className="h-screen w-screen bg-blue-800 flex items-center justify-center p-4 overflow-hidden">
       <LanguageSwitcher position="bottom-right" />
-      <div className="window shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-500" style={{ width: '100%', maxWidth: '450px' }}>
+      <motion.div 
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="window shadow-2xl" 
+        style={{ width: '100%', maxWidth: '450px' }}
+      >
         <div className="title-bar"><div className="title-bar-text uppercase">{t('player.logOnTitle')}</div></div>
         <div className="window-body m-0 p-8 bg-[#ece9d8]">
           <div className="flex items-center mb-8 bg-white p-4 border-2 inset shadow-inner"><LogIn size={48} className="mr-4 text-blue-700" /><p className="text-lg font-bold leading-tight">{t('player.logOnDesc')}</p></div>
@@ -125,7 +170,7 @@ function Player() {
                 required 
                 maxLength={15} 
                 className="w-full p-4 text-2xl font-bold border-2 border-gray-400 inset focus:border-blue-500 outline-none shadow-inner"
-                placeholder={t('player.yourName', 'Ваше ім\'я')}
+                placeholder={t('player.yourName')}
               />
             </div>
             <div className="flex justify-center mt-6">
@@ -135,15 +180,12 @@ function Player() {
             </div>
           </form>
           <div className="pt-4 border-t border-gray-300 flex flex-col" style={{ marginTop: '12px' }}>
-            <button type="button" onClick={() => window.open('/host', '_blank')} className="w-full flex items-center justify-center gap-2 py-2" style={{ marginBottom: '10px' }}>
+            <button type="button" onClick={() => window.open('/host', '_blank')} className="w-full flex items-center justify-center gap-2 py-2">
               <Monitor size={16} /> {t('player.hostGame')}
-            </button>
-            <button type="button" onClick={() => window.open('/create', '_blank')} className="w-full flex items-center justify-center gap-2 py-2">
-              <PlusCircle size={16} /> {t('player.createRoom')}
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 
@@ -154,11 +196,20 @@ function Player() {
   const qType = currentQuestion?.type || 'multiple_choice';
 
   return (
-    <div className="h-screen w-screen bg-blue-800 p-2 font-tahoma flex flex-col box-border">
+    <div className="h-screen w-screen bg-blue-800 p-2 font-tahoma flex flex-col box-border overflow-hidden">
       <LanguageSwitcher position="bottom-right" />
-      <div className="window flex-grow flex flex-col shadow-2xl">
-        <div className="title-bar"><div className="title-bar-text uppercase tracking-wider">{t('player.connection', { code: room?.code, name })}</div></div>
-        <div className="window-body m-0 p-6 flex-grow flex flex-col items-center justify-center bg-white relative">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="window flex-grow flex flex-col shadow-2xl overflow-hidden"
+      >
+        <div className="title-bar">
+          <div className="title-bar-text uppercase tracking-wider flex items-center gap-2">
+            {t('player.connection', { code: room?.code, name })}
+            {myPlayer?.combo > 0 && <span className="bg-orange-500 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"><Flame size={12}/> {myPlayer.combo}</span>}
+          </div>
+        </div>
+        <div className="window-body m-0 p-6 flex-grow flex flex-col items-center justify-center bg-white relative overflow-y-auto">
           {room?.state === 'lobby' && (
             <div className="w-full h-full flex flex-col items-center max-w-md mx-auto py-4">
               {avatar === null ? (
@@ -171,8 +222,14 @@ function Player() {
                     </div>
                   </fieldset></div>
                 </div>
-              ) : (<div className="text-center mt-6 animate-in fade-in zoom-in duration-300"><div className="mb-8 mx-auto w-40 h-40 p-4 border-4 border-white border-b-gray-500 border-r-gray-500 bg-gray-100 flex items-center justify-center shadow-xl"><RetroAvatar id={avatar} /></div>
-                  <h2 className="text-3xl font-bold mb-4 text-blue-900">{t('player.connected')}</h2><p className="text-xl text-gray-600 italic">{t('player.waitingHost')}</p></div>
+              ) : (
+                <div className="text-center mt-6 animate-in fade-in zoom-in duration-300">
+                  <div className="mb-8 mx-auto w-40 h-40 p-4 border-4 border-white border-b-gray-500 border-r-gray-500 bg-gray-100 flex items-center justify-center shadow-xl">
+                    <RetroAvatar id={avatar} />
+                  </div>
+                  <h2 className="text-3xl font-bold mb-4 text-blue-900">{t('player.connected')}</h2>
+                  <p className="text-xl text-gray-600 italic">{t('player.waitingHost')}</p>
+                </div>
               )}
             </div>
           )}
@@ -204,18 +261,53 @@ function Player() {
                     </button>
                   </div>
                 )}
-                {qType === 'text' && (<div className="flex flex-col gap-6"><input type="text" value={textAnswer} onChange={e => setTextAnswer(e.target.value)} className="border-4 border-gray-300 p-6 text-3xl w-full font-bold focus:border-blue-500 outline-none" placeholder={t('player.typeAnswer')}/><button className="mobile-btn !bg-blue-600 !text-white !py-6 text-3xl" onClick={() => submitAnswer(textAnswer)} disabled={choice !== null}>{t('player.submit')}</button></div>)}
-                {qType === 'percentage' && (<div className="flex flex-col gap-8 items-center w-full"><span className="text-5xl font-black text-blue-800">{percentAnswer}%</span><input type="range" min="0" max="100" value={percentAnswer} onChange={e => setPercentAnswer(parseInt(e.target.value))} className="w-full h-12"/><button className="mobile-btn !bg-blue-600 !text-white !py-6 text-3xl" onClick={() => submitAnswer(percentAnswer)} disabled={choice !== null}>{t('player.submit')}</button></div>)}
-                {qType === 'image_zone' && (<div className="flex flex-col items-center gap-6 w-full"><div style={{ position: 'relative', width: '100%', maxWidth: '400px' }} className="shadow-2xl border-4 border-black"><img src={currentQuestion?.imageUrl} alt="" style={{ width:'100%', height:'auto', display:'block' }} onClick={(e) => { const rect = e.target.getBoundingClientRect(); submitAnswer({ x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 }); }}/></div><p className="text-center text-xl font-bold text-gray-700 animate-pulse">{t('player.tapImage')}</p></div>)}
+                {qType === 'text' && (
+                  <div className="flex flex-col gap-6">
+                    <input type="text" value={textAnswer} onChange={e => setTextAnswer(e.target.value)} className="border-4 border-gray-300 p-6 text-3xl w-full font-bold focus:border-blue-500 outline-none shadow-inner" placeholder={t('player.typeAnswer')}/>
+                    <button className="mobile-btn !bg-blue-600 !text-white !py-6 text-3xl" onClick={() => submitAnswer(textAnswer)} disabled={choice !== null || !textAnswer.trim()}>{t('player.submit')}</button>
+                  </div>
+                )}
+                {qType === 'percentage' && (
+                  <div className="flex flex-col gap-8 items-center w-full">
+                    <span className="text-5xl font-black text-blue-800">{percentAnswer}%</span>
+                    <input type="range" min="0" max="100" value={percentAnswer} onChange={e => setPercentAnswer(parseInt(e.target.value))} className="w-full h-12"/>
+                    <button className="mobile-btn !bg-blue-600 !text-white !py-6 text-3xl" onClick={() => submitAnswer(percentAnswer)} disabled={choice !== null}>{t('player.submit')}</button>
+                  </div>
+                )}
+                {qType === 'image_zone' && (
+                  <div className="flex flex-col items-center gap-6 w-full">
+                    <div style={{ position: 'relative', width: '100%', maxWidth: '400px' }} className="shadow-2xl border-4 border-black">
+                      <img src={currentQuestion?.imageUrl} alt="" style={{ width:'100%', height:'auto', display:'block' }} onClick={(e) => { 
+                        if (choice !== null) return;
+                        const rect = e.target.getBoundingClientRect(); 
+                        submitAnswer({ x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 }); 
+                      }}/>
+                    </div>
+                    <p className="text-center text-xl font-bold text-gray-700 animate-pulse">{t('player.tapImage')}</p>
+                  </div>
+                )}
               </div>
-              {choice !== null && choice !== undefined && <div className="text-center mt-6 p-4 bg-green-50 border-2 border-green-500 rounded animate-bounce text-green-700 font-bold text-2xl">{t('player.answerReceived')}</div>}
+              {choice !== null && choice !== undefined && (
+                <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center mt-6 p-4 bg-green-50 border-2 border-green-500 rounded text-green-700 font-bold text-2xl">
+                  {t('player.answerReceived')}
+                </motion.div>
+              )}
             </div>
           )}
 
-          {room?.state === 'reveal' && (<div className="text-center"><HelpCircle size={48} className="mx-auto mb-2 text-blue-500" /><h2 className="text-2xl font-bold mb-2">{t('player.timesUp')}</h2><p>{t('player.lookMainScreen')}</p></div>)}
-          {room?.state === 'end' && (<div className="text-center"><h2 className="text-2xl font-bold mb-2">{t('player.gameOver')}</h2><p>{t('player.lookMainScreenResults')}</p></div>)}
+          {room?.state === 'reveal' && (<div className="text-center"><HelpCircle size={64} className="mx-auto mb-4 text-blue-500 animate-bounce" /><h2 className="text-3xl font-bold mb-2">{t('player.timesUp')}</h2><p className="text-xl">{t('player.lookMainScreen')}</p></div>)}
+          {room?.state === 'end' && (<div className="text-center"><h2 className="text-3xl font-bold mb-2">{t('player.gameOver')}</h2><p className="text-xl">{t('player.lookMainScreenResults')}</p></div>)}
         </div>
-      </div>
+        
+        {/* Reaction Bar */}
+        <div className="bg-[#ece9d8] border-t-2 border-white p-2 flex gap-2 overflow-x-auto no-scrollbar">
+           {REACTION_EMOJIS.map(emoji => (
+             <button key={emoji} onClick={() => sendReaction(emoji)} className="text-2xl p-2 hover:bg-white active:bg-gray-300 border border-transparent hover:border-gray-400 transition-all rounded">
+               {emoji}
+             </button>
+           ))}
+        </div>
+      </motion.div>
     </div>
   );
 }
