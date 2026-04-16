@@ -1,29 +1,44 @@
 const SOUNDS = {
-  startup: 'https://www.winhistory.de/more/winxp/xpstart.wav',
-  error: 'https://www.myinstants.com/media/sounds/erro.mp3',
-  notify: 'https://www.myinstants.com/media/sounds/windows-xp-balloon-pop.mp3',
-  tada: 'https://www.myinstants.com/media/sounds/tada.mp3',
-  click: 'https://www.myinstants.com/media/sounds/start_p16Uv3S.mp3',
-  shutdown: 'https://www.winhistory.de/more/winxp/xpshutdown.wav',
-  tick: 'https://www.myinstants.com/media/sounds/clock-ticking-2.mp3'
+  startup: '/sounds/startup.wav',
+  error: '/sounds/error.mp3',
+  notify: '/sounds/notify.mp3',
+  tada: '/sounds/tada.mp3',
+  click: '/sounds/click.mp3',
+  shutdown: '/sounds/shutdown.wav',
+  tick: '/sounds/tick.mp3'
 };
 
 class SoundManager {
   constructor() {
     this.audioCache = {};
     this.enabled = true;
+    this.initialized = false;
+  }
+
+  // Initialize audio context on first user interaction
+  init() {
+    if (this.initialized) return;
+    this.initialized = true;
+    console.log("SoundManager: Audio initialized by user interaction");
   }
 
   play(soundName) {
     if (!this.enabled || !SOUNDS[soundName]) return;
 
     try {
-      if (!this.audioCache[soundName]) {
-        this.audioCache[soundName] = new Audio(SOUNDS[soundName]);
-      }
-      const audio = this.audioCache[soundName].cloneNode();
+      const audio = new Audio(SOUNDS[soundName]);
       audio.volume = 0.5;
-      audio.play().catch(e => console.warn("Audio play blocked by browser policy"));
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          if (error.name === 'NotAllowedError') {
+            console.warn("Audio play blocked: Wait for user interaction.");
+          } else {
+            console.error("Audio error:", error);
+          }
+        });
+      }
     } catch (err) {
       console.error("SoundManager Error:", err);
     }
